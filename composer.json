@@ -1,0 +1,16 @@
+{
+    "name": "rinq/rinq-php",
+    "authors": [
+        {
+            "name": "Darian Brown",
+            "email": "darianbr@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "eloquent/phony": "^0.14",
+        "friendsofphp/php-cs-fixer": "^1",
+        "phpunit/phpunit": "^5"
+    },
+    "autoload": { "psr-4": { "Rinq\\": "src" } },
+    "autoload-dev": { "psr-4": { "Rinq\\": "test/src" } }
+}
