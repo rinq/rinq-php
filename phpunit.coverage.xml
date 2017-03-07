@@ -1,0 +1,17 @@
+<phpunit bootstrap="vendor/autoload.php" verbose="true" colors="true" mapTestClassNameToCoveredClassName="true">
+    <testsuites>
+        <testsuite>
+            <directory>test/suite</directory>
+        </testsuite>
+    </testsuites>
+
+    <logging>
+        <log type="coverage-html" target="artifacts/tests/coverage" charset="UTF-8" yui="true" highlight="true" />
+    </logging>
+
+    <filter>
+        <whitelist>
+            <directory>src</directory>
+        </whitelist>
+    </filter>
+</phpunit>
