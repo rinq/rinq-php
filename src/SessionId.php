@@ -17,19 +17,19 @@ namespace Rinq;
 class SessionId
 {
     /**
-	 * Peer is the ID of the peer that owns the session.
+     * Peer is the ID of the peer that owns the session.
      *
      * @var PeerId The peer id.
      */
-	private $peer;
+    private $peer;
 
     /**
-	 * Seq is a monotonically increasing sequence allocated to each session in
-	 * the order it is created by the owning peer. Application sessions begin
-	 * with a sequence value of 1. The sequnce value zero is reserved for the
-	 * "zero-session", which is used for internal operations.
+     * Seq is a monotonically increasing sequence allocated to each session in
+     * the order it is created by the owning peer. Application sessions begin
+     * with a sequence value of 1. The sequnce value zero is reserved for the
+     * "zero-session", which is used for internal operations.
      *
      * @var int The sequence identifier.
      */
-	private $seq;
+    private $seq;
 }

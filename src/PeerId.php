@@ -22,20 +22,20 @@ namespace Rinq;
 class PeerId
 {
     /**
-	 * Clock is a time-based portion of the ID, this helps uniquely identify
-	 * peer IDs over longer time-scales, such as when looking back through
-	 * logs, etc.
+     * Clock is a time-based portion of the ID, this helps uniquely identify
+     * peer IDs over longer time-scales, such as when looking back through
+     * logs, etc.
      *
      * @var int The clock.
      */
-	private $clock;
+    private $clock;
 
     /**
-	 * Rand is a unique number identifying this peer within a network at any
-	 * given time. It is generated randomly and then reserved when the peer
-	 * connects to the network.
+     * Rand is a unique number identifying this peer within a network at any
+     * given time. It is generated randomly and then reserved when the peer
+     * connects to the network.
      *
      * @var int The unique identifier.
      */
-	private $rand;
+    private $rand;
 }

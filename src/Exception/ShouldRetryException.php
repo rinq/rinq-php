@@ -6,6 +6,6 @@ namespace Rinq\Exception;
 
 use RuntimeException;
 
-class InvalidRevisionException extends RuntimeException
+class ShouldRetryException extends RuntimeException
 {
 }

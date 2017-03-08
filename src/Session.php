@@ -44,7 +44,7 @@ interface Session
      * @return Revision Current revision of this session.
      *
      * @throws InvalidRevisionException If the session has been closed, and rev
-     * is invalid.
+     *                                  is invalid.
      */
     public function currentRevision(): Revision;
 
@@ -75,10 +75,10 @@ interface Session
      *
      * @return mixed The repsonse of the invoked call.
      *
-     * @throws ServerException If the error occurred on the server.
-     * @throws ClientException For application-defined failures.
+     * @throws ServerException   If the error occurred on the server.
+     * @throws ClientException   For application-defined failures.
      * @throws NotFoundException If the Session has been closed and the command
-     * request can not be sent.
+     *                           request can not be sent.
      */
     public function call(
         Context $context,
@@ -106,90 +106,132 @@ interface Session
      * the session and as such the handler is never invoked in the event of a
      * timeout.
      *
-     * If IsNotFound(err) returns true, the session has been closed and the
-     * command request can not be sent.
+     * @throws NotFoundException If the Session has been closed and the command
+     *                           request can not be sent.
      */
     public function callAsync(
         Context $context,
         string $namespace,
         string $command,
-        Payload out
-    ): MessageID;
+        Payload $out
+    ): MessageId;
 
-    // SetAsyncHandler sets the asynchronous call handler.
-    //
-    // h is invoked for each command response received to a command request made
-    // with CallAsync().
-    //
-    // If IsNotFound(err) returns true, the session has been closed and the
-    // command request can not be sent.
-    SetAsyncHandler(h AsyncHandler) error
+    /**
+     * SetAsyncHandler sets the asynchronous call handler.
+     *
+     * $handler is invoked for each command response received to a command
+     * request made with callAsync().
+     *
+     * @throws NotFoundException If the Session has been closed and the command
+     *                           request can not be sent.
+     */
+    public function setAsyncHandler(AsyncHandler $handler);
 
-    // Execute sends a command request to the next available peer listening to
-    // the $namespace namespace and returns immediately.
-    //
-    // $command and out are an application-defined command name and request payload,
-    // respectively. Both are passed to the command handler on the server.
-    //
-    // If IsNotFound(err) returns true, the session has been closed and the
-    // command request can not be sent.
-    Execute($context context.Context, $namespace, $command string, out *Payload) (err error)
+    /**
+     * Execute sends a command request to the next available peer listening to
+     * the $namespace namespace and returns immediately.
+     *
+     * $command and out are an application-defined command name and request payload,
+     * respectively. Both are passed to the command handler on the server.
+     *
+     * If IsNotFound(err) returns true, the session has been closed and the
+     * command request can not be sent.
+     *
+     * @throws NotFoundException If the Session has been closed and the command
+     *                           request can not be sent.
+     */
+    public function execute(
+        Context $context,
+        string $namespace,
+        string $command,
+        Payload $out
+    );
 
-    // Execute sends a command request to all peers listening to the $namespace
-    // namespace and returns immediately.
-    //
-    // Only those peers that are connected to the network at the time the
-    // request is sent will receive it. Requests are not queued for future peers.
-    //
-    // $command and out are an application-defined command name and request payload,
-    // respectively. Both are passed to the command handler on the server.
-    //
-    // If IsNotFound(err) returns true, the session has been closed and the
-    // command request can not be sent.
-    ExecuteMany($context context.Context, $namespace, $command string, out *Payload) (err error)
+    /**
+     * Execute sends a command request to all peers listening to the $namespace
+     * namespace and returns immediately.
+     *
+     * Only those peers that are connected to the network at the time the
+     * request is sent will receive it. Requests are not queued for future peers.
+     *
+     * $command and out are an application-defined command name and request payload,
+     * respectively. Both are passed to the command handler on the server.
+     *
+     * @throws NotFoundException If the Session has been closed and the command
+     *                           request can not be sent.
+     */
+    public function executeMany(
+        Context $context,
+        string $namespace,
+        string $command,
+        Payload $out
+    );
 
-    // Notify sends a message directly to another session.
-    //
-    // t and out are an application-defined notification type and payload,
-    // respectively. Both are passed to the notification handler configured on
-    // the session identified by s.
-    //
-    // If IsNotFound(err) returns true, this session has been closed and the
-    // notification can not be sent.
-    Notify($context context.Context, s SessionID, t string, out *Payload) (err error)
+    /**
+     * Notify sends a message directly to another session.
+     *
+     * t and out are an application-defined notification type and payload,
+     * respectively. Both are passed to the notification handler configured on
+     * the session identified by s.
+     *
+     * @throws NotFoundException If the Session has been closed and the command
+     *                           request can not be sent.
+     */
+    public function notify(
+        Context $context,
+        string $namespace,
+        string $command,
+        Payload $out
+    );
 
-    // NotifyMany sends a message to multiple sessions.
-    //
-    // The constraint c is a set of attribute key/value pairs that a session
-    // must have in it's attribute table in order to receive the notification.
-    //
-    // t and out are an application-defined notification type and payload,
-    // respectively. Both are passed to the notification handlers configured on
-    // those sessions that match c.
-    //
-    // If IsNotFound(err) returns true, this session has been closed and the
-    // notification can not be sent.
-    NotifyMany($context context.Context, c Constraint, t string, out *Payload) error
+    /**
+     * NotifyMany sends a message to multiple sessions.
+     *
+     * The constraint c is a set of attribute key/value pairs that a session
+     * must have in it's attribute table in order to receive the notification.
+     *
+     * t and out are an application-defined notification type and payload,
+     * respectively. Both are passed to the notification handlers configured on
+     * those sessions that match c.
+     *
+     * @throws NotFoundException If the Session has been closed and the command
+     *                           request can not be sent.
+     */
+    public function notifyMany(
+        Context $context,
+        string $namespace,
+        string $command,
+        Payload $out
+    );
 
-    // Listen begins listening for notifications sent to this session.
-    //
-    // h is invoked on its own goroutine for each notification.
-    Listen(h NotificationHandler) error
+    /**
+     * Listen begins listening for notifications sent to this session.
+     *
+     * $handler is invoked on its own routine for each notification.
+     *
+     * @param NotificationHandler $handler
+     */
+    public function listen(NotificationHandler $handler);
 
-    // Unlisten stops listening for notifications.
-    //
-    // If the session is not currently listening for notifications, nil is
-    // returned immediately.
-    Unlisten() error
+    /**
+     * Unlisten stops listening for notifications.
+     *
+     * @throws ?? If the session is not currently listening for notifications.
+     */
+    public function unlisten();
 
-    // Close destroys the session after any pending calls have completed.
-    Close()
+    /**
+     * Close destroys the session after any pending calls have completed.
+     */
+    public function close();
 
-    // Done returns a channel that is closed when the session is closed.
-    //
-    // The session may be closed directly with Close(), or via a Revision that
-    // refers to this session, either locally or remotely.
-    //
-    // All sessions are closed when their owning peer is stopped.
-    Done() <-chan struct{}
+    /**
+     * Done returns a channel that is closed when the session is closed.
+     *
+     * The session may be closed directly with Close(), or via a Revision that
+     * refers to this session, either locally or remotely.
+     *
+     * All sessions are closed when their owning peer is stopped.
+     */
+    public function done();
 }
