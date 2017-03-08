@@ -24,7 +24,7 @@ interface Peer
      *
      * @return string The peer's unique identifier.
      */
-    public function id(): string
+    public function id(): string;
 
     /**
      * Session creates and returns a new session owned by this peer.
@@ -53,7 +53,7 @@ interface Peer
      * @param string         $namespace The namespace of the command request.
      * @param CommandHandler $handler   The handler to fulfil the request.
      *
-     * @return bool True If the listen started in a new namespace.
+     * @return bool True If $handler was registered listening in a new namespace.
      */
     public function listen(string $namespace, CommandHandler $handler): bool;
 
@@ -103,5 +103,5 @@ interface Peer
      * GracefulStop does NOT block until the peer is disconnected. Use the
      * done() channel to wait for the peer to disconnect.
      */
-    public function gracefulStop()
+    public function gracefulStop();
 }
