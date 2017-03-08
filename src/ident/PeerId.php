@@ -2,7 +2,7 @@
 
 declare(strict_types=1); // @codeCoverageIgnore
 
-namespace Rinq;
+namespace Rinq\Ident;
 
 /**
  * PeerID uniquely identifies a peer within a network.
@@ -22,20 +22,41 @@ namespace Rinq;
 class PeerId
 {
     /**
+     * Create a new Peer id.
+     *
+     * @param int $clock The time-based portion of the ID.
+     * @param int $rand  Random, unique identifier for this peer.
+     */
+    public static function create(int $clock, int $rand): self
+    {
+        return new self($clock, $rand);
+    }
+
+    /**
+     * @param int $clock The time-based portion of the ID.
+     * @param int $rand  Random, unique identifier for this peer.
+     */
+    private function __construct(int $clock, int $rand)
+    {
+        $this->clock = $clock;
+        $this->rand = $rand;
+    }
+
+    /**
      * Clock is a time-based portion of the ID, this helps uniquely identify
      * peer IDs over longer time-scales, such as when looking back through
      * logs, etc.
      *
-     * @var int The clock.
+     * @var int The time-based portion of the ID.
      */
-    private $clock;
+    public $clock;
 
     /**
      * Rand is a unique number identifying this peer within a network at any
      * given time. It is generated randomly and then reserved when the peer
      * connects to the network.
      *
-     * @var int The unique identifier.
+     * @var int Random, unique identifier for this peer.
      */
-    private $rand;
+    public $rand;
 }
