@@ -3,6 +3,7 @@
 declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq;
+
 /*
  * Peer represents a connection to a Rinq network.
  *
@@ -22,9 +23,9 @@ interface Peer
     /**
      * The peer's unique identifier.
      *
-     * @return string The peer's unique identifier.
+     * @return PeerId The peer's unique identifier.
      */
-    public function id(): string;
+    public function id(): PeerId;
 
     /**
      * Session creates and returns a new session owned by this peer.
@@ -83,7 +84,7 @@ interface Peer
      * A null return value indicates that the peer was stopped because Stop() or
      * gracefulStop() has been called.
      */
-    public function err(): Error;
+    public function err(): PeerException;
 
     /**
      * Stop instructs the peer to disconnect from the network immediately.
