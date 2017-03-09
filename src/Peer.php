@@ -100,7 +100,7 @@ interface Peer
      * GracefulStop() instructs the peer to disconnect from the network once
      * all pending operations have completed.
      *
-     * Any calls to Session.Call(), command handlers or notification handlers
+     * Any calls to Session::call(), command handlers or notification handlers
      * must return before the peer has stopped.
      *
      * GracefulStop does NOT block until the peer is disconnected. Use the

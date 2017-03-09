@@ -13,7 +13,7 @@ use Rinq\Ident\SessionId;
  * Sessions are the "clients" on a Rinq network, able to issue command requests
  * and send notifications to other sessions.
  *
- * Sessions are created by calling Peer.Session(). The peer that creates a
+ * Sessions are created by calling Peer::session(). The peer that creates a
  * session is called the "owning peer".
  *
  * Each session has an in-memory attribute table, which can be used to store
@@ -45,8 +45,7 @@ interface Session
      *
      * @return Revision Current revision of this session.
      *
-     * @throws InvalidRevisionException If the session has been closed, and rev
-     *                                  is invalid.
+     * @throws InvalidRevisionException If the session has been closed, and revision is invalid.
      */
     public function currentRevision(): Revision;
 
@@ -70,7 +69,7 @@ interface Session
      * failure. Failures are server-side errors that are part of the command's
      * public API, as opposed to unexpected errors. If err is a failure, out
      * contains the failure's application-defined payload; for this reason
-     * out.Close() must be called, even if err is non-nil.
+     * $out->close() must be called, even if err is non-nil.
      *
      * @param string $command Application-defined command name
      * @param object $out     Application-defined request payload.
@@ -79,8 +78,7 @@ interface Session
      *
      * @throws ServerException   If the error occurred on the server.
      * @throws ClientException   For application-defined failures.
-     * @throws NotFoundException If the Session has been closed and the command
-     *                           request can not be sent.
+     * @throws NotFoundException If the Session has been closed and the command request can not be sent.
      */
     public function call(
         Context $context,
@@ -91,7 +89,8 @@ interface Session
 
     /**
      * CallAync sends a command request to the next available peer listening to
-     * the $namespace namespace and instructs it to send a response, but does not block.
+     * the $namespace namespace and instructs it to send a response, but does
+     * not block.
      *
      * $command and out are an application-defined command name and request
      * payload, respectively. Both are passed to the command handler on the
@@ -99,7 +98,7 @@ interface Session
      *
      * id is a value identifying the outgoing command request.
      *
-     * When a response is received, the handler specified by SetAsyncHandler()
+     * When a response is received, the handler specified by setAsyncHandler()
      * is invoked. It is passed the id, namespace and command name of the
      * request, along with the response payload and error.
      *
@@ -108,8 +107,9 @@ interface Session
      * the session and as such the handler is never invoked in the event of a
      * timeout.
      *
-     * @throws NotFoundException If the Session has been closed and the command
-     *                           request can not be sent.
+     * @throws ServerException   If the error occurred on the server.
+     * @throws ClientException   For application-defined failures.
+     * @throws NotFoundException If the Session has been closed and the command request can not be sent.
      */
     public function callAsync(
         Context $context,
@@ -124,8 +124,7 @@ interface Session
      * $handler is invoked for each command response received to a command
      * request made with callAsync().
      *
-     * @throws NotFoundException If the Session has been closed and the command
-     *                           request can not be sent.
+     * @throws NotFoundException If the Session has been closed and the handler can not be set.
      */
     public function setAsyncHandler(AsyncHandler $handler);
 
@@ -139,8 +138,7 @@ interface Session
      * If IsNotFound(err) returns true, the session has been closed and the
      * command request can not be sent.
      *
-     * @throws NotFoundException If the Session has been closed and the command
-     *                           request can not be sent.
+     * @throws NotFoundException If the Session has been closed and the command request can not be sent.
      */
     public function execute(
         Context $context,
@@ -159,8 +157,7 @@ interface Session
      * $command and out are an application-defined command name and request payload,
      * respectively. Both are passed to the command handler on the server.
      *
-     * @throws NotFoundException If the Session has been closed and the command
-     *                           request can not be sent.
+     * @throws NotFoundException If the Session has been closed and the command request can not be sent.
      */
     public function executeMany(
         Context $context,
@@ -176,8 +173,7 @@ interface Session
      * respectively. Both are passed to the notification handler configured on
      * the session identified by s.
      *
-     * @throws NotFoundException If the Session has been closed and the command
-     *                           request can not be sent.
+     * @throws NotFoundException If the Session has been closed and the command request can not be sent.
      */
     public function notify(
         Context $context,
@@ -196,8 +192,7 @@ interface Session
      * respectively. Both are passed to the notification handlers configured on
      * those sessions that match c.
      *
-     * @throws NotFoundException If the Session has been closed and the command
-     *                           request can not be sent.
+     * @throws NotFoundException If the Session has been closed and the command request can not be sent.
      */
     public function notifyMany(
         Context $context,
@@ -230,7 +225,7 @@ interface Session
     /**
      * Done returns a channel that is closed when the session is closed.
      *
-     * The session may be closed directly with Close(), or via a Revision that
+     * The session may be closed directly with close(), or via a Revision that
      * refers to this session, either locally or remotely.
      *
      * All sessions are closed when their owning peer is stopped.
