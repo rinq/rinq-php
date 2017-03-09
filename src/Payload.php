@@ -5,22 +5,30 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq;
 
 /**
- * Payload is the contents of a request or response.
+ * Payload represents the contents of a request or response.
  */
-class Payload
+final class Payload
 {
     /**
-     * Create a new payload with the given data.
+     * Create a new payload containing the given data.
      *
-     * @param mixed $data Data which makes up the payload.
+     * @param mixed $data The data which makes up the payload.
      */
-    public static function create(mixed $data)
+    public static function create(mixed $data): self
     {
         return new self($data);
     }
 
     /**
-     * @param mixed $data Data which makes up the payload.
+     * @return mixed The data which makes up the payload.
+     */
+    public function data(): mixed
+    {
+        return $this->data;
+    }
+
+    /**
+     * @param mixed $data The data which makes up the payload.
      */
     private function __construct(mixed $data)
     {
@@ -28,7 +36,7 @@ class Payload
     }
 
     /**
-     * @var mixed Data which makes up the payload.
+     * @var mixed The data which makes up the payload.
      */
     private $data;
 }

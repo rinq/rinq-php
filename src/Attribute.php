@@ -5,23 +5,71 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq;
 
 /**
- * Attr is a session attribute.
+ * Attribute is a session attribute.
  *
  * Sessions contain a versioned key/value store. See the Session interface for
  * more information.
  */
-class Attribute
+final class Attribute
 {
-    public static function create(string $key, mixed $value)
+    /**
+     * Create a new attribute with the given key/value.
+     *
+     * @param string $key   The key is an application-defined identifier.
+     * @param mixed  $value The attributes value.
+     */
+    public static function create(string $key, mixed $value): self
     {
-        return new self($key, $value);
+        return new self($key, $value, false);
     }
 
-    private function __construct(string $key, mixed $value)
+    /**
+     * Convenience method to create an attribute with the given key/value and
+     * marked as frozen.
+     *
+     * @param string $key   The key is an application-defined identifier.
+     * @param mixed  $value The attributes value.
+     */
+    public static function freeze(string $key, mixed $value): self
+    {
+        return new self($key, $value, true);
+    }
+
+    /**
+     * @return string The key is an application-defined identifier.
+     */
+    public function key(): string
+    {
+        return $this->key;
+    }
+
+    /**
+     * @return mixed  The attributes value.
+     */
+    public function value(): mixed
+    {
+        return $this->value;
+    }
+
+    /**
+     * @return bool True if the attribute is "frozen".
+     */
+    public function isFrozen(): bool
+    {
+        return $this->isFrozen;
+    }
+
+    /**
+     * Create a new attribute with the given key/value.
+     *
+     * @param string $key      The key is an application-defined identifier.
+     * @param mixed  $value    The attributes value.
+     * @param bool   $isFrozen True if the attribute is "frozen".
+     */
+    private function __construct(string $key, mixed $value, bool $isFrozen)
     {
         $this->key = $key;
         $this->value = $value;
-        $this->isFrozen = false;
     }
 
     /**
@@ -45,7 +93,7 @@ class Attribute
      * True if the attribute is "frozen" such that it can never be altered again
      * (for a given session).
      *
-     * @var bool true if the attribute is "frozen".
+     * @var bool True if the attribute is "frozen".
      */
     private $isFrozen;
 }

@@ -7,19 +7,15 @@ namespace Rinq;
 /**
  * A context is a request that carries a timeout and traceId.
  *
- * Timeout is the number of second the context is valid for.
- *
  * Timeout is also used to derive a deadline, that is, a point time time after
  * which the context is no longer valid.
- *
- * Trace id is used to track a single command throughout its invocation.
  */
-class Context
+final class Context
 {
     /**
      * Create a new context.
      *
-     * @param int    $timeout How long in seconds the context is valid for.
+     * @param int    $timeout The timeout in seconds.
      * @param string $traceId The unique identifier for the context.
      */
     public static function create(int $timeout, string $traceId): self
@@ -36,7 +32,7 @@ class Context
     }
 
     /**
-     * @return string The trace id.
+     * @return string The unique identifier for the context.
      */
     public function traceId(): string
     {
@@ -44,7 +40,7 @@ class Context
     }
 
     /**
-     * @param int    $timeout How long in seconds the context is valid for.
+     * @param int    $timeout The timeout in seconds.
      * @param string $traceId The unique identifier for the context.
      */
     private function __construct(int $timeout, string $traceId)
@@ -54,11 +50,16 @@ class Context
     }
 
     /**
-     * @var int How long in seconds the context is valid for.
+     * Timeout is the number of second the context is valid for.
+     *
+     * @var int Timeout in seconds.
      */
     private $timeout;
 
     /**
+     * Trace id is used to track a single command throughout its invocation and
+     * can possibly branch off to multiple calls.
+     *
      * @var string The unique identifier for the context.
      */
     private $traceId;
