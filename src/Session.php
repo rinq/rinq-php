@@ -4,6 +4,8 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq;
 
+use Rinq\Ident\SessionId;
+
 /**
  * Session is an interface representing a "local" session, that is, a session
  * created by a peer running in this process.

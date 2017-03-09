@@ -4,6 +4,8 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq;
 
+use Rinq\Ident\Reference;
+
 /**
  * Revision represents a specific revision of session.
  *
@@ -28,15 +30,16 @@ interface Revision
      *
      * @return Revision Latest revision of the session.
      *
-     * @throws NotFoundException If the session has been closed and revision is
-     *                           invalid.
+     * @throws NotFoundException If the session has been closed and revision is invalid.
      */
     public function refresh(Context $context): Revision;
 
     /**
-     * Get returns the attribute with key k from the attribute table.
+     * Get returns the attribute with key $key from the attribute table.
      *
-     * The returned attribute is guaranteed to be correct as of Ref().Rev.
+     * The returned attribute is guaranteed to be correct as of
+     * Reference::revision().
+     *
      * Non-existent attributes are equivalent to empty attributes, therefore it
      * is not an error to request a key that has never been created.
      *
@@ -52,10 +55,8 @@ interface Revision
      *
      * @return Attribute
      *
-     * @throws ShouldRetryException If the attribute can not be retreived
-     *                              because it has already been modified.
-     * @throws NotFoundException    If the session has been closed and the
-     *                              revision can not be queried.
+     * @throws ShouldRetryException If the attribute can not be retreived because it has already been modified.
+     * @throws NotFoundException    If the session has been closed and the revision can not be queried.
      */
     public function get(Context $context, string $key): Attribute;
 
