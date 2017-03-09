@@ -4,7 +4,6 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Exception;
 
-use Exception;
 use Rinq\Ident\SessionId;
 use RuntimeException;
 

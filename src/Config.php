@@ -73,7 +73,6 @@ final class Config
         return $this->pruneInterval;
     }
 
-
     /**
      * @param float           $defaultTimeout The default timeout in seconds.
      * @param LoggerInterface $logger         Defines a target for all the logs.
@@ -97,8 +96,8 @@ final class Config
 
     /**
      * DefaultTimeout specifies the maximum amount of time to wait for a call to
-	 * return. It is used if the context passed to Session::call() does not
-	 * already have a deadline.
+     * return. It is used if the context passed to Session::call() does not
+     * already have a deadline.
      *
      * @var float The default timeout in seconds.
      */
@@ -111,8 +110,8 @@ final class Config
 
     /**
      * CommandWorkers is the number of incoming command REQUESTS that are
-	 * accepted at any given time. A new routine is started to service each
-	 * command request.
+     * accepted at any given time. A new routine is started to service each
+     * command request.
      *
      * @var int Maximum accepted command requests.
      */
@@ -128,7 +127,7 @@ final class Config
 
     /**
      * PruneInterval specifies how often the cache of remote session information
-	 * is purged of unused data.
+     * is purged of unused data.
      * @var How often session info is purged.
      */
     private $pruneInterval;

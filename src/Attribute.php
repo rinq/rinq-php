@@ -44,7 +44,7 @@ final class Attribute
     }
 
     /**
-     * @return mixed  The attributes value.
+     * @return mixed The attributes value.
      */
     public function value()
     {
