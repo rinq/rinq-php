@@ -1,5 +1,5 @@
 {
-    "name": "rinq/rinq-php",
+    "name": "rinq/rinq",
     "authors": [
         {
             "name": "Darian Brown",
@@ -9,7 +9,9 @@
     "require-dev": {
         "eloquent/phony": "^0.14",
         "friendsofphp/php-cs-fixer": "^1",
-        "phpunit/phpunit": "^5"
+        "peridot-php/leo": "^1",
+        "peridot-php/peridot": "^1",
+        "peridot-php/peridot-code-coverage-reporters": "^2"
     },
     "autoload": { "psr-4": { "Rinq\\": "src" } },
     "autoload-dev": { "psr-4": { "Rinq\\": "test/src" } }

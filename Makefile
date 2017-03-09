@@ -1,26 +1,44 @@
-test: vendor
-	vendor/bin/phpunit
+SOURCE = $(shell find src test -type f)
 
-coverage: vendor
-	phpdbg -qrr vendor/bin/phpunit -c phpunit.coverage.xml
+.PHONY: test
+test: | vendor
+	php -c test/etc/php.ini vendor/bin/peridot
 
-lint: vendor $(shell find src)
+.PHONY: coverage
+coverage: artifacts/tests/coverage/index.html
+
+.PHONY: coverage-open
+coverage-open: artifacts/tests/coverage/index.html
+	open artifacts/tests/coverage/index.html
+
+.PHONY: lint
+lint: $(SOURCE) | vendor
 	vendor/bin/php-cs-fixer fix
 
+.PHONY: prepare
 prepare: lint coverage
-	composer validate --no-check-publish
+	composer validate
 	travis lint
 
-ci: vendor lint
-	vendor/bin/phpunit
+.PHONY: ci
+ci: lint artifacts/tests/coverage/clover.xml
+	php -c test/etc/php.ini -d zend.assertions=-1 vendor/bin/peridot
 
-.PHONY: FORCE test coverage lint prepare ci
+.PHONY: FORCE
+	test coverage coverage-open lint prepare ci
 
+.PHONY: vendor
 vendor: composer.lock
 	composer install
 
 composer.lock: composer.json
 	composer update
 
+artifacts/tests/coverage/index.html: $(SOURCE) | vendor
+	phpdbg -c test/etc/php.ini -qrr vendor/bin/peridot --reporter html-code-coverage --code-coverage-path=$(@D)
+
+artifacts/tests/coverage/clover.xml: $(SOURCE) | vendor
+	phpdbg -c test/etc/php.ini -qrr vendor/bin/peridot --reporter clover-code-coverage --code-coverage-path=$@
+
 %.php: FORCE
-	@php -l "$@" > /dev/null
+	@php -l $@ > /dev/null

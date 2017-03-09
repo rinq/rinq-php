@@ -1,4 +1,4 @@
-# Rinq for PHP
+# Changelog
 
 ## Next Release
 
