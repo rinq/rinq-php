@@ -5,9 +5,10 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq;
 
 /**
- * A context is a request that carries a timeout and traceId.
+ * Context carries timeout and other request-scoped values across API boundaries
+ * and between processes.
  *
- * Timeout is also used to derive a deadline, that is, a point time time after
+ * Timeout is also used to derive a deadline, that is, a pofloat time time after
  * which the context is no longer valid.
  */
 final class Context
@@ -15,18 +16,18 @@ final class Context
     /**
      * Create a new context.
      *
-     * @param int    $timeout The timeout in seconds.
-     * @param string $traceId The unique identifier for the context.
+     * @param float       $timeout The timeout in seconds.
+     * @param string|null $traceId The unique identifier for the context.
      */
-    public static function create(int $timeout, string $traceId): self
+    public static function create(float $timeout, string $traceId = null): self
     {
         return new self($timeout, $traceId);
     }
 
     /**
-     * @return int The timeout in seconds.
+     * @return float The timeout in seconds.
      */
-    public function timeout(): int
+    public function timeout(): float
     {
         return $this->timeout;
     }
@@ -40,10 +41,10 @@ final class Context
     }
 
     /**
-     * @param int    $timeout The timeout in seconds.
-     * @param string $traceId The unique identifier for the context.
+     * @param float       $timeout The timeout in seconds.
+     * @param string|null $traceId The unique identifier for the context.
      */
-    private function __construct(int $timeout, string $traceId)
+    private function __construct(float $timeout, string $traceId = null)
     {
         $this->timeout = $timeout;
         $this->traceId = $traceId;
@@ -52,7 +53,7 @@ final class Context
     /**
      * Timeout is the number of second the context is valid for.
      *
-     * @var int Timeout in seconds.
+     * @var float Timeout in seconds.
      */
     private $timeout;
 
