@@ -22,32 +22,6 @@ namespace Rinq\Ident;
 class PeerId
 {
     /**
-     * Create a new Peer id.
-     *
-     * @param int $clock The time-based portion of the ID.
-     * @param int $rand  Random, unique identifier for this peer.
-     */
-    public static function create(int $clock, int $rand): self
-    {
-        return new self($clock, $rand);
-    }
-
-    public function __toString()
-    {
-        return sprintf('%s-%s', dechex($this->clock), dechex($this->rand));
-    }
-
-    /**
-     * @param int $clock The time-based portion of the ID.
-     * @param int $rand  Random, unique identifier for this peer.
-     */
-    private function __construct(int $clock, int $rand)
-    {
-        $this->clock = $clock;
-        $this->rand = $rand;
-    }
-
-    /**
      * Clock is a time-based portion of the ID, this helps uniquely identify
      * peer IDs over longer time-scales, such as when looking back through
      * logs, etc.
@@ -64,4 +38,30 @@ class PeerId
      * @var int Random, unique identifier for this peer.
      */
     public $rand;
+
+    /**
+     * Create a new Peer ID.
+     *
+     * @param int $clock The time-based portion of the ID.
+     * @param int $rand  Random, unique identifier for this peer.
+     */
+    public static function create(int $clock, int $rand): self
+    {
+        return new self($clock, $rand);
+    }
+
+    public function __toString()
+    {
+        return sprintf('%X-%04X', dechex($this->clock), dechex($this->rand));
+    }
+
+    /**
+     * @param int $clock The time-based portion of the ID.
+     * @param int $rand  Random, unique identifier for this peer.
+     */
+    private function __construct(int $clock, int $rand)
+    {
+        $this->clock = $clock;
+        $this->rand = $rand;
+    }
 }

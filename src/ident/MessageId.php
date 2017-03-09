@@ -10,7 +10,17 @@ namespace Rinq\Ident;
 class MessageId
 {
     /**
-     * Create a new message id.
+     * @var Referenece Refers to a session at a specific revision.
+     */
+    public $reference;
+
+    /**
+     * @var int The sequence ID of the message.
+     */
+    public $sequence;
+
+    /**
+     * Create a new message ID.
      *
      * @param Reference $reference Refers to a session at a specific revision.
      * @param int       $sequence  The sequence ID of the message.
@@ -29,14 +39,4 @@ class MessageId
         $this->reference = $reference;
         $this->sequence = $sequence;
     }
-
-    /**
-     * @var Referenece Refers to a session at a specific revision.
-     */
-    public $reference;
-
-    /**
-     * @var int The sequence ID of the message.
-     */
-    public $sequence;
 }

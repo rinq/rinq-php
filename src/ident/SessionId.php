@@ -17,6 +17,21 @@ namespace Rinq\Ident;
 class SessionId
 {
     /**
+     * @var PeerId The ID of the peer that owns the session.
+     */
+    public $peerId;
+
+    /**
+     * Seq is a monotonically increasing sequence allocated to each session in
+     * the order it is created by the owning peer. Application sessions begin
+     * with a sequence value of 1. The sequnce value zero is reserved for the
+     * "zero-session", which is used for internal operations.
+     *
+     * @var int The sequence ID of the session.
+     */
+    public $sequence;
+
+    /**
      * Create a new Session ID.
      *
      * @param PeerId $peerId   The ID of the peer that owns the session.
@@ -41,19 +56,4 @@ class SessionId
         $this->peerId = $peerId;
         $this->sequence = $sequence;
     }
-
-    /**
-     * @var PeerId The ID of the peer that owns the session.
-     */
-    public $peerId;
-
-    /**
-     * Seq is a monotonically increasing sequence allocated to each session in
-     * the order it is created by the owning peer. Application sessions begin
-     * with a sequence value of 1. The sequnce value zero is reserved for the
-     * "zero-session", which is used for internal operations.
-     *
-     * @var int The sequence ID of the session.
-     */
-    public $sequence;
 }
