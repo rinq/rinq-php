@@ -27,6 +27,11 @@ class SessionId
         return new self($peerId, $sequence);
     }
 
+    public function __toString()
+    {
+        return sprintf('%s.%s', $this->peerId, $this->sequence);
+    }
+
     /**
      * @param PeerId $peerId   The ID of the peer that owns the session.
      * @param int    $sequence The sequence ID of the session.

@@ -32,6 +32,11 @@ class PeerId
         return new self($clock, $rand);
     }
 
+    public function __toString()
+    {
+        return sprintf('%s-%s', dechex($this->clock), dechex($this->rand));
+    }
+
     /**
      * @param int $clock The time-based portion of the ID.
      * @param int $rand  Random, unique identifier for this peer.
