@@ -36,7 +36,7 @@ final class AttributeTable
     }
 
     /**
-     * @var array Map of attributes.
+     * @var array<string, Attribute> Map of attributes.
      */
     private $attributes;
 }

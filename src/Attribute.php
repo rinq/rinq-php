@@ -46,7 +46,7 @@ final class Attribute
     /**
      * @return mixed  The attributes value.
      */
-    public function value(): mixed
+    public function value()
     {
         return $this->value;
     }

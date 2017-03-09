@@ -11,14 +11,14 @@ final class Config
     /**
      * Create new configuration.
      *
-     * @param int             $defaultTimeout The default timeout.
+     * @param float           $defaultTimeout The default timeout in seconds.
      * @param LoggerInterface $logger         Defines a target for all the logs.
      * @param int             $commandWorkers Maximum accepted command requests.
      * @param int             $sessionWorkers Maximum allowed command responses.
      * @param int             $pruneInterval  How often session info is purged.
      */
     public static function create(
-        int $defaultTimeout,
+        float $defaultTimeout,
         LoggerInterface $logger,
         int $commandWorkers,
         int $sessionWorkers,
@@ -34,9 +34,9 @@ final class Config
     }
 
     /**
-     * @return int The default timeout.
+     * @return float The default timeout in seconds.
      */
-    public function defaultTimeout(): int
+    public function defaultTimeout(): float
     {
         return $this->defaultTimeout;
     }
@@ -44,7 +44,7 @@ final class Config
     /**
      * @return LoggerInterface Defines a target for all the logs.
      */
-    public function logger (): LoggerInterface
+    public function logger(): LoggerInterface
     {
         return $this->logger;
     }
@@ -75,14 +75,14 @@ final class Config
 
 
     /**
-     * @param int             $defaultTimeout The default timeout.
+     * @param float           $defaultTimeout The default timeout in seconds.
      * @param LoggerInterface $logger         Defines a target for all the logs.
      * @param int             $commandWorkers Maximum accepted command requests.
      * @param int             $sessionWorkers Maximum allowed command responses.
      * @param int             $pruneInterval  How often session info is purged.
      */
     private function __construct(
-        int $defaultTimeout,
+        float $defaultTimeout,
         LoggerInterface $logger,
         int $commandWorkers,
         int $sessionWorkers,
@@ -97,10 +97,10 @@ final class Config
 
     /**
      * DefaultTimeout specifies the maximum amount of time to wait for a call to
-	 * return. It is used if the context passed to Session.call() does not
+	 * return. It is used if the context passed to Session::call() does not
 	 * already have a deadline.
      *
-     * @var int The default timeout.
+     * @var float The default timeout in seconds.
      */
     private $defaultTimeout;
 
