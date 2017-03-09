@@ -6,7 +6,7 @@ namespace Rinq;
 
 describe('ArrayObject', function () {
     beforeEach(function () {
-        $this->arrayObject = new ArrayObject(['one', 'two', 'three']);
+        $this->arrayObject = new \ArrayObject(['one', 'two', 'three']);
     });
 
     describe('->count()', function () {
