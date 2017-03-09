@@ -34,9 +34,9 @@ interface Session
     /**
      * The session's unique identifier.
      *
-     * @return string The session's unique identifier.
+     * @return SessionId The session's unique identifier.
      */
-    public function id(): string;
+    public function id(): SessionId;
 
     /**
      * CurrentRevision returns the current revision of this session.
