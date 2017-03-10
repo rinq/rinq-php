@@ -56,7 +56,7 @@ interface Peer
      * @param string         $namespace The namespace of the command request.
      * @param CommandHandler $handler   The handler to fulfil the request.
      *
-     * @return bool True If $handler was registered listening in a new namespace.
+     * @return bool True If handler $handler starts listening in a new namespace.
      */
     public function listen(string $namespace, CommandHandler $handler): bool;
 
@@ -73,32 +73,13 @@ interface Peer
     public function unlisten(string $namespace): bool;
 
     /**
-     * Done returns a channel that is closed when the peer is stopped.
-     *
-     * Err() may be called to obtain the error that caused the peer to stop, if
-     * any occurred.
+     * 
      */
-    public function done(): Channel;
+    public function wait();
 
     /**
-     * Err returns the error that caused the done() channel to close.
-     *
-     * A null return value indicates that the peer was stopped because Stop() or
-     * gracefulStop() has been called.
-     */
-    public function err(): PeerException;
-
-    /**
-     * Stop instructs the peer to disconnect from the network immediately.
-     *
-     * Stop does NOT block until the peer is disconnected. Use the done()
-     * channel to wait for the peer to disconnect.
-     */
-    public function stop();
-
-    /**
-     * GracefulStop() instructs the peer to disconnect from the network once
-     * all pending operations have completed.
+     * Stop instructs the peer to disconnect from the network in a graceful
+     * manner once all pending operations have completed.
      *
      * Any calls to Session::call(), command handlers or notification handlers
      * must return before the peer has stopped.
@@ -106,5 +87,5 @@ interface Peer
      * GracefulStop does NOT block until the peer is disconnected. Use the
      * done() channel to wait for the peer to disconnect.
      */
-    public function gracefulStop();
+    public function stop();
 }

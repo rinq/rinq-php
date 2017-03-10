@@ -8,7 +8,7 @@ namespace Rinq;
  * Context carries timeout and other request-scoped values across API boundaries
  * and between processes.
  *
- * Timeout is also used to derive a deadline, that is, a pofloat time time after
+ * Timeout is also used to derive a deadline, that is, a point in time after
  * which the context is no longer valid.
  */
 final class Context

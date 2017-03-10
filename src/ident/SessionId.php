@@ -44,7 +44,7 @@ class SessionId
 
     public function __toString()
     {
-        return sprintf('%s.%s', $this->peerId, $this->sequence);
+        return sprintf('%s.%d', $this->peerId, $this->sequence);
     }
 
     /**
