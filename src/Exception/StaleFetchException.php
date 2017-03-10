@@ -4,10 +4,10 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Exception;
 
-use Rinq\ident\Reference;
+use Rinq\Ident\Reference;
 use RuntimeException;
 
-class StaleFetchException extends RuntimeException implements ShouldRetryException
+class StaleFetchException extends RuntimeException implements StaleException
 {
     /**
      * @param Reference $reference The reference that could not be retrieved.
@@ -16,7 +16,7 @@ class StaleFetchException extends RuntimeException implements ShouldRetryExcepti
     {
         parent::__construct(
             sprintf(
-                'can not fetch attributes at %s, one or more attributes have ' .
+                'Can not fetch attributes at %s, one or more attributes have ' .
                     'been modified since that revision.',
                 $reference
             )

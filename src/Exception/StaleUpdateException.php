@@ -4,10 +4,10 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Exception;
 
-use Rinq\ident\Reference;
+use Rinq\Ident\Reference;
 use RuntimeException;
 
-class StaleUpdateException extends RuntimeException implements ShouldRetryException
+class StaleUpdateException extends RuntimeException implements StaleException
 {
     /**
      * @param Reference $reference The reference that could not be updated.
