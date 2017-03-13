@@ -4,6 +4,7 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq;
 
+use Rinq\Exception\InvalidNamespaceException;
 use Rinq\Ident\PeerId;
 
 /*
@@ -57,6 +58,8 @@ interface Peer
      * @param CommandHandler $handler   The handler to fulfil the request.
      *
      * @return bool True If handler $handler starts listening in a new namespace.
+     *
+     * @throws InvalidNamespaceException When namespace is invalid.
      */
     public function listen(string $namespace, CommandHandler $handler): bool;
 
@@ -69,11 +72,13 @@ interface Peer
      * @param string $namespace The namespace to stop listening for.
      *
      * @return bool True If a handler was listening in namespace $namespace.
+     *
+     * @throws InvalidNamespaceException When namespace is invalid.
      */
     public function unlisten(string $namespace): bool;
 
     /**
-     * 
+     *
      */
     public function wait();
 

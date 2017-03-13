@@ -212,8 +212,6 @@ interface Session
 
     /**
      * Unlisten stops listening for notifications.
-     *
-     * @throws ?? If the session is not currently listening for notifications.
      */
     public function unlisten();
 
@@ -221,14 +219,4 @@ interface Session
      * Close destroys the session after any pending calls have completed.
      */
     public function close();
-
-    /**
-     * Done returns a channel that is closed when the session is closed.
-     *
-     * The session may be closed directly with close(), or via a Revision that
-     * refers to this session, either locally or remotely.
-     *
-     * All sessions are closed when their owning peer is stopped.
-     */
-    public function done();
 }

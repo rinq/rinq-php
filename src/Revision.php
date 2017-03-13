@@ -4,10 +4,9 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq;
 
+use Rinq\Exception\FrozenAttributeException;
 use Rinq\Exception\StaleFetchException;
 use Rinq\Exception\StaleUpdateException;
-use Rinq\Exception\FrozenAttributeException;
-
 use Rinq\Ident\Reference;
 
 /**
@@ -24,8 +23,10 @@ use Rinq\Ident\Reference;
 interface Revision
 {
     /**
-     * @return Reference The session reference, which holds the session ID and
-     *                   the revision number represented by this instance.
+     * The session reference, which holds the session ID and the revision number
+     * represented by this instance.
+     *
+     * @return Reference The session reference.
      */
     public function reference(): Reference;
 
@@ -116,7 +117,7 @@ interface Revision
      * @return Revision Latest revision of the session.
      *
      * @throws StaleUpdateException When updating any but the latest revision.
-     * @throws NotFoundException   If the session has been closed and the revision can not be queried.
+     * @throws NotFoundException    If the session has been closed and the revision can not be queried.
      */
     public function update(Context $context, $attrs): Revision;
 
