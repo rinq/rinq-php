@@ -7,6 +7,9 @@ namespace Rinq\Exception;
 use Rinq\Ident\SessionId;
 use RuntimeException;
 
+/**
+ * Session does not exist or has since been closed and is no longer available.
+ */
 class NotFoundException extends RuntimeException
 {
     /**

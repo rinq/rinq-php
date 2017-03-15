@@ -4,36 +4,40 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Exception;
 
-use Rinq\Ident\Attribute;
+use Rinq\Ident\Reference;
 use RuntimeException;
 
+/**
+ * Indicates a failure to update a revision because one or more of the updated attribute
+ * are frozen.
+ */
 class FrozenAttributeException extends RuntimeException
 {
     /**
-     * @param Attribute $attribute The attribute that could not be modified.
+     * @param Reference $reference The reference to the change-set that could not be modified.
      */
-    public function __construct(Attribute $attribute)
+    public function __construct(Reference $reference)
     {
         parent::__construct(
             sprintf(
-                'Attribute %s is frozen and can not be modified.',
-                $attribute
+                'Can not update %s, the change-set references one or more frozen keys.',
+                $reference
             )
         );
 
-        $this->attribute = $attribute;
+        $this->reference = $reference;
     }
 
     /**
-     * @return Attribute The attribute that could not be modified.
+     * @return Reference The reference to the change-set that could not be modified.
      */
-    public function attribute(): Attribute
+    public function reference(): Reference
     {
-        return $this->attribute;
+        return $this->reference;
     }
 
     /**
-     * @var Attribute The attribute that could not be modified.
+     * @var Reference The reference to the change-set that could not be modified.
      */
-    private $attribute;
+    private $reference;
 }

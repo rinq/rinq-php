@@ -7,6 +7,9 @@ namespace Rinq\Exception;
 use Rinq\Ident\Reference;
 use RuntimeException;
 
+/**
+ * Indicates an error updating a session as\ one or more attributes were stale.
+ */
 class StaleUpdateException extends RuntimeException implements StaleException
 {
     /**

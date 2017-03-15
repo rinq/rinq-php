@@ -7,6 +7,9 @@ namespace Rinq\Exception;
 use Rinq\Ident\Reference;
 use RuntimeException;
 
+/**
+ * Indicates an error fetching one or more attributes as they were stale.
+ */
 class StaleFetchException extends RuntimeException implements StaleException
 {
     /**
