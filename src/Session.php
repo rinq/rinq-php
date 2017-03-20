@@ -14,7 +14,7 @@ use Rinq\Ident\SessionId;
  * Sessions are the "clients" on a Rinq network, able to issue command requests
  * and send notifications to other sessions.
  *
- * Sessions are created by calling Peer::session(). The peer that creates a
+ * Sessions are created by calling {@see Peer::session()}. The peer that creates a
  * session is called the "owning peer".
  *
  * Each session has an in-memory attribute table, which can be used to store
