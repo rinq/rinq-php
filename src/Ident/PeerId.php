@@ -52,7 +52,7 @@ class PeerId
 
     public function __toString()
     {
-        return sprintf('%X-%04X', dechex($this->clock), dechex($this->rand));
+        return sprintf('%X-%04X', $this->clock, $this->rand);
     }
 
     /**
