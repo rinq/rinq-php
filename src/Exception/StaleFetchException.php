@@ -8,7 +8,8 @@ use Rinq\Ident\Reference;
 use RuntimeException;
 
 /**
- * Indicates an error fetching one or more attributes as they were stale.
+ * Indicates an error fetching the session as the revision has since been
+ * modified.
  */
 class StaleFetchException extends RuntimeException implements StaleException
 {
