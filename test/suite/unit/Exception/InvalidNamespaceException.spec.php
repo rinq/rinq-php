@@ -4,7 +4,7 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Exception;
 
-describe('InvalidNamespaceException', function () {
+describe(InvalidNamespaceException::class, function () {
     describe('::emptyNamespace()', function () {
         it('should construct a message about an empty namespace', function () {
             expect(InvalidNamespaceException::emptyNamespace()->getMessage())

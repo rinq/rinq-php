@@ -8,7 +8,7 @@ use Rinq\Ident\PeerId;
 use Rinq\Ident\Reference;
 use Rinq\Ident\SessionId;
 
-describe('FrozenAttributeException', function () {
+describe(FrozenAttributeException::class, function () {
     beforeEach(function () {
         $this->reference = Reference::create(SessionId::create(PeerId::create(111, 222), 333), 444);
         $this->subject = new FrozenAttributeException($this->reference);

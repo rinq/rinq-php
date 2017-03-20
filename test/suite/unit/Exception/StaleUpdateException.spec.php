@@ -8,7 +8,7 @@ use Rinq\Ident\PeerId;
 use Rinq\Ident\Reference;
 use Rinq\Ident\SessionId;
 
-describe('StaleUpdateException', function () {
+describe(StaleUpdateException::class, function () {
     beforeEach(function () {
         $this->reference = Reference::create(SessionId::create(PeerId::create(111, 222), 333), 444);
         $this->subject = new StaleUpdateException($this->reference);
@@ -18,7 +18,7 @@ describe('StaleUpdateException', function () {
         it('should construct a meaningful exception message', function () {
             expect($this->subject->getMessage())->to->equal(
                 'Can not update or close 6F-00DE.333@444, the session has ' .
-                'been modified since that revision.'
+                    'been modified since that revision.'
             );
         });
     });

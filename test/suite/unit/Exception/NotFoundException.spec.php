@@ -7,7 +7,7 @@ namespace Rinq\Exception;
 use Rinq\Ident\PeerId;
 use Rinq\Ident\SessionId;
 
-describe('NotFoundException', function () {
+describe(NotFoundException::class, function () {
     beforeEach(function () {
         $this->sessionId = SessionId::create(PeerId::create(111, 222), 333);
         $this->subject = new NotFoundException($this->sessionId);
