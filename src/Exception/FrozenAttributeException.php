@@ -8,20 +8,19 @@ use Rinq\Ident\Reference;
 use RuntimeException;
 
 /**
- * Indicates an error fetching the session as the revision has since been
- * modified.
+ * Indicates a failure to update a revision because one or more of the updated attribute
+ * are frozen.
  */
-class StaleFetchException extends RuntimeException implements StaleException
+class FrozenAttributeException extends RuntimeException
 {
     /**
-     * @param Reference $reference The reference that could not be retrieved.
+     * @param Reference $reference The reference to the change-set that could not be modified.
      */
     public function __construct(Reference $reference)
     {
         parent::__construct(
             sprintf(
-                'Can not fetch attributes at %s, one or more attributes have ' .
-                    'been modified since that revision.',
+                'Can not update %s, the change-set references one or more frozen keys.',
                 $reference
             )
         );
@@ -30,7 +29,7 @@ class StaleFetchException extends RuntimeException implements StaleException
     }
 
     /**
-     * @return Reference The reference that could not be retrieved.
+     * @return Reference The reference to the change-set that could not be modified.
      */
     public function reference(): Reference
     {
@@ -38,7 +37,7 @@ class StaleFetchException extends RuntimeException implements StaleException
     }
 
     /**
-     * @var Reference The reference that could not be retrieved.
+     * @var Reference The reference to the change-set that could not be modified.
      */
     private $reference;
 }

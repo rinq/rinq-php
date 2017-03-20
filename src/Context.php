@@ -8,8 +8,8 @@ namespace Rinq;
  * Context carries timeout and other request-scoped values across API boundaries
  * and between processes.
  *
- * Timeout is also used to derive a deadline, that is, a pofloat time time after
- * which the context is no longer valid.
+ * Timeout specifies the maximum amount of time (in seconds) that an operation
+ * may take before it is cancelled.
  */
 final class Context
 {

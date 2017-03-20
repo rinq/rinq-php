@@ -96,7 +96,7 @@ final class Config
 
     /**
      * DefaultTimeout specifies the maximum amount of time to wait for a call to
-     * return. It is used if the context passed to Session::call() does not
+     * return. It is used if the context passed to {@see Session::call()} does not
      * already have a deadline.
      *
      * @var float The default timeout in seconds.

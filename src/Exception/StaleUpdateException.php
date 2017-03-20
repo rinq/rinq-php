@@ -7,6 +7,10 @@ namespace Rinq\Exception;
 use Rinq\Ident\Reference;
 use RuntimeException;
 
+/**
+ * Indicates an error updating a session as the revision has since been
+ * modified.
+ */
 class StaleUpdateException extends RuntimeException implements StaleException
 {
     /**
