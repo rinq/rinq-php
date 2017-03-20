@@ -35,6 +35,11 @@ class Reference
         return new self($sessionId, $revision);
     }
 
+    public function __toString()
+    {
+        return sprintf('%s@%d', $this->sessionId, $this->revision);
+    }
+
     /**
      * @param SessionId $sessionId The unique ID session.
      * @param int       $revision  A "version" of a session.

@@ -4,8 +4,8 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Exception;
 
-use Rinq\Ident\SessionId;
 use Rinq\Ident\PeerId;
+use Rinq\Ident\SessionId;
 
 describe('NotFoundException', function () {
     beforeEach(function () {
@@ -13,8 +13,8 @@ describe('NotFoundException', function () {
         $this->subject = new NotFoundException($this->sessionId);
     });
 
-    describe('->construct()', function() {
-        xit('should construct a meaningful exception message', function() {
+    describe('->construct()', function () {
+        it('should construct a meaningful exception message', function () {
             expect($this->subject->getMessage())->to->equal('Session 6F-00DE.333 not found.');
         });
     });
