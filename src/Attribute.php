@@ -16,9 +16,9 @@ final class Attribute
      * Create a new attribute with the given key/value.
      *
      * @param string $key   The key is an application-defined identifier.
-     * @param mixed  $value The attributes value.
+     * @param string $value The attributes value.
      */
-    public static function create(string $key, mixed $value): self
+    public static function create(string $key, string $value): self
     {
         return new self($key, $value, false);
     }
@@ -28,9 +28,9 @@ final class Attribute
      * marked as frozen.
      *
      * @param string $key   The key is an application-defined identifier.
-     * @param mixed  $value The attributes value.
+     * @param string $value The attributes value.
      */
-    public static function freeze(string $key, mixed $value): self
+    public static function freeze(string $key, string $value): self
     {
         return new self($key, $value, true);
     }
@@ -44,9 +44,9 @@ final class Attribute
     }
 
     /**
-     * @return mixed The attributes value.
+     * @return string The attributes value.
      */
-    public function value()
+    public function value(): string
     {
         return $this->value;
     }
@@ -63,13 +63,14 @@ final class Attribute
      * Create a new attribute with the given key/value.
      *
      * @param string $key      The key is an application-defined identifier.
-     * @param mixed  $value    The attributes value.
+     * @param string $value    The attributes value.
      * @param bool   $isFrozen True if the attribute is "frozen".
      */
-    private function __construct(string $key, mixed $value, bool $isFrozen)
+    private function __construct(string $key, string $value, bool $isFrozen)
     {
         $this->key = $key;
         $this->value = $value;
+        $this->isFrozen = $isFrozen;
     }
 
     /**
@@ -85,7 +86,7 @@ final class Attribute
      * Value is the attribute's value. Any valid UTF-8 string can be used as a
      * value, including the empty string.
      *
-     * @var mixed The attributes value.
+     * @var string The attributes value.
      */
     private $value;
 
