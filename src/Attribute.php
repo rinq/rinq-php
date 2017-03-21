@@ -18,7 +18,7 @@ final class Attribute
      * @param string $key   The key is an application-defined identifier.
      * @param mixed  $value The attributes value.
      */
-    public static function create(string $key, mixed $value): self
+    public static function create(string $key, $value): self
     {
         return new self($key, $value, false);
     }
@@ -30,7 +30,7 @@ final class Attribute
      * @param string $key   The key is an application-defined identifier.
      * @param mixed  $value The attributes value.
      */
-    public static function freeze(string $key, mixed $value): self
+    public static function freeze(string $key, $value): self
     {
         return new self($key, $value, true);
     }
@@ -66,10 +66,11 @@ final class Attribute
      * @param mixed  $value    The attributes value.
      * @param bool   $isFrozen True if the attribute is "frozen".
      */
-    private function __construct(string $key, mixed $value, bool $isFrozen)
+    private function __construct(string $key, $value, bool $isFrozen)
     {
         $this->key = $key;
         $this->value = $value;
+        $this->isFrozen = $isFrozen;
     }
 
     /**
