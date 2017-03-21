@@ -30,6 +30,11 @@ class MessageId
         return new self($reference, $sequence);
     }
 
+    public function __toString()
+    {
+        return sprintf('%s#%d', $this->reference, $this->sequence);
+    }
+
     /**
      * @param Reference $reference Refers to a session at a specific revision.
      * @param int       $sequence  The sequence ID of the message.
