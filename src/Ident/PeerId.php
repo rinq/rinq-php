@@ -55,6 +55,11 @@ class PeerId
         return sprintf('%X-%04X', $this->clock, $this->rand);
     }
 
+    public function shortString(): string
+    {
+        return sprintf('%04X', $this->rand);
+    }
+
     /**
      * @param int $clock The time-based portion of the ID.
      * @param int $rand  Random, unique identifier for this peer.
