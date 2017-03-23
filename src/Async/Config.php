@@ -6,6 +6,9 @@ namespace Rinq\Async;
 
 use Psr\Log\LoggerInterface;
 
+/**
+ * A set of config values used by the peers.
+ */
 final class Config
 {
     /**
