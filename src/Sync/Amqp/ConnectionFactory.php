@@ -5,9 +5,10 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq\Sync\Amqp;
 
 use Bunny\Client;
+use Bunny\Constants;
 use Bunny\Exception\ClientException;
-use Rinq\Sync\Config;
 use Rinq\Ident\PeerId;
+use Rinq\Sync\Config;
 
 /**
  * Connects to an AMQP-based Rinq network, establishing the peer's unique
@@ -29,17 +30,17 @@ final class ConnectionFactory
 
         $peerId = $this->establishIdentity();
 
-        /*return Peer::create(
-            $peerId,
-            $this->broker,
-            localStore,
-            remoteStore,
-            invoker,
-            server,
-            notifier,
-            listener,
-            $this->config->logger(),
-    	);*/
+        // return Peer::create(
+        //     $peerId,
+        //     $this->broker,
+        //     localStore,
+        //     remoteStore,
+        //     invoker,
+        //     server,
+        //     notifier,
+        //     listener,
+        //     $this->config->logger()
+        // );
     }
 
     /**
@@ -47,19 +48,15 @@ final class ConnectionFactory
      */
     private function establishIdentity(): PeerId
     {
-        // TODO: Remove - testing the queue collision.
-        srand(1);
-
         while (true) {
             try {
-                // TODO: fix the randomisation
-                // $peerId = PeerId::create(time(), rand(1, 9999));
-                $peerId = PeerId::create(1,rand(1, 9999));
+                $peerId = PeerId::create(time(), rand(1, 0xFFFF));
+
                 $this->broker->channel()->queueDeclare(
                     $peerId,    // queue
-                    false,  // passive
-                    false,  // durable
-                    true    // exclusive
+                    false,      // passive
+                    false,      // durable
+                    true        // exclusive
                 );
 
                 $this->config->logger()->info(
@@ -73,8 +70,7 @@ final class ConnectionFactory
 
                 return $peerId;
             } catch (ClientException $e) {
-                // Some other type of client exception.
-                if (stripos($e->getMessage(), 'RESOURCE_LOCKED - cannot obtain exclusive access to locked queue') === false) {
+                if (Constants::STATUS_RESOURCE_LOCKED !== $e->getCode()) {
                     throw $e;
                 }
 
