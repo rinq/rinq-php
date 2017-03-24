@@ -17,5 +17,5 @@ interface Service
     /**
      * Stop halts the service immediately.
      */
-    public function stop()
+    public function stop();
 }

@@ -4,11 +4,7 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Internal\Command;
 
-use Rinq\Internal\Service\Service;
-use Rinq\Payload;
-use Rinq\Context;
-use Rinq\Ident\MessageId;
-use Rinq\Ident\PeerId;
+use Rinq\CommandHandler;
 
 /**
  * Server processes command requests made by an invoker.
@@ -35,5 +31,4 @@ interface Server
      * @throws ?
      */
     public function unlisten($namespace): bool;
-
 }
