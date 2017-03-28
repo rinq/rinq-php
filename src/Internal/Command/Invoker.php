@@ -7,7 +7,6 @@ namespace Rinq\Internal\Command;
 use Rinq\Context;
 use Rinq\Ident\MessageId;
 use Rinq\Ident\PeerId;
-use Rinq\Payload;
 
 /**
  * Invoker is a low-level RPC interface, it is used to implement the "command
@@ -22,6 +21,8 @@ interface Invoker
      * Sends a unicast command request to a specific peer and blocks until a
      * response is received or the context deadline is met.
      *
+     * @return mixed The response of the invoked call.
+     *
      * @throws ?
      */
     public function callUnicast(
@@ -30,13 +31,15 @@ interface Invoker
         PeerId $target,
         string $namespace,
         string $command,
-        Payload $payload,
+        mixed $payload,
         string &$traceId
-    ): Payload;
+    );
 
     /**
      * Sends a load-balanced command request to the first available peer and
      * blocks until a response is received or the context deadline is met.
+     *
+     * @return mixed The response of the invoked call.
      *
      * @throws ?
      */
@@ -45,9 +48,9 @@ interface Invoker
         MessageId $messageId,
         string $namespace,
         string $command,
-        Payload $payload,
+        mixed $payload,
         string &$traceId
-    ): Payload;
+    );
 
     /**
      * Sends a load-balanced command request to the first available peer,
@@ -60,7 +63,7 @@ interface Invoker
         MessageId $messageId,
         string $namespace,
         string $command,
-        Payload $payload,
+        mixed $payload,
         string &$traceId
     ): void;
 
@@ -83,7 +86,7 @@ interface Invoker
         MessageId $messageId,
         string $namespace,
         string $command,
-        Payload $payload,
+        mixed $payload,
         string &$traceId
     ): void;
 
@@ -98,7 +101,7 @@ interface Invoker
         MessageId $messageId,
         string $namespace,
         string $command,
-        Payload $payload,
+        mixed $payload,
         string &$traceId
     ): void;
 }

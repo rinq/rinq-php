@@ -4,8 +4,6 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Internal\Command;
 
-use Rinq\CommandHandler;
-
 /**
  * Server processes command requests made by an invoker.
  */
@@ -18,10 +16,7 @@ interface Server
      *
      * @throws ?
      */
-    public function listen(
-        string $namespace,
-        CommandHandler $handler
-    ): bool;
+    public function listen(string $namespace, callable $handler): bool;
 
     /**
      * Unlisten stops listening for command requests made by an invoker.
