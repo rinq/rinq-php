@@ -2,7 +2,8 @@
     "name": "rinq/rinq",
     "description": "A cross-language command bus and distributed ephemeral data store.",
     "require": {
-        "php": "^7"
+        "php": "^7",
+        "bunny/bunny": "^0.2"
     },
     "require-dev": {
         "eloquent/phony": "^0.14",

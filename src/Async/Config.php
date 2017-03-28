@@ -2,35 +2,46 @@
 
 declare(strict_types=1); // @codeCoverageIgnore
 
-namespace Rinq;
+namespace Rinq\Async;
 
 use Psr\Log\LoggerInterface;
 
+/**
+ * A set of config values used by the peers.
+ */
 final class Config
 {
     /**
      * Create new configuration.
      *
-     * @param float           $defaultTimeout The default timeout in seconds.
      * @param LoggerInterface $logger         Defines a target for all the logs.
+     * @param float           $defaultTimeout The default timeout in seconds.
+     * @param float           $pruneInterval  How often session info is purged in seconds.
      * @param int             $commandWorkers Maximum accepted command requests.
      * @param int             $sessionWorkers Maximum allowed command responses.
-     * @param int             $pruneInterval  How often session info is purged.
      */
     public static function create(
-        float $defaultTimeout,
         LoggerInterface $logger,
-        int $commandWorkers,
-        int $sessionWorkers,
-        int $pruneInterval
+        float $defaultTimeout = 5.0,
+        float $pruneInterval = 180.0,
+        int $commandWorkers = 0,
+        int $sessionWorkers = 0
     ): self {
         return new self(
-            $defaultTimeout,
             $logger,
+            $defaultTimeout,
+            $pruneInterval,
             $commandWorkers,
-            $sessionWorkers,
-            $pruneInterval
+            $sessionWorkers
         );
+    }
+
+    /**
+     * @return LoggerInterface Defines a target for all the logs.
+     */
+    public function logger(): LoggerInterface
+    {
+        return $this->logger;
     }
 
     /**
@@ -42,11 +53,11 @@ final class Config
     }
 
     /**
-     * @return LoggerInterface Defines a target for all the logs.
+     * @return float How often session info is purged in seconds.
      */
-    public function logger(): LoggerInterface
+    public function pruneInterval(): float
     {
-        return $this->logger;
+        return $this->pruneInterval;
     }
 
     /**
@@ -66,33 +77,30 @@ final class Config
     }
 
     /**
-     * @return int How often session info is purged.
+     * @param LoggerInterface $logger         Defines a target for all the logs.
+     * @param float           $defaultTimeout The default timeout in seconds.
+     * @param float           $pruneInterval  How often session info is purged in seconds.
+     * @param int             $commandWorkers Maximum accepted command requests.
+     * @param int             $sessionWorkers Maximum allowed command responses.
      */
-    public function pruneInterval(): int
-    {
-        return $this->pruneInterval;
+    private function __construct(
+        LoggerInterface $logger,
+        float $defaultTimeout,
+        float $pruneInterval,
+        int $commandWorkers,
+        int $sessionWorkers
+    ) {
+        $this->logger = $logger;
+        $this->defaultTimeout = $defaultTimeout;
+        $this->pruneInterval = $pruneInterval;
+        $this->commandWorkers = $commandWorkers;
+        $this->sessionWorkers = $sessionWorkers;
     }
 
     /**
-     * @param float           $defaultTimeout The default timeout in seconds.
-     * @param LoggerInterface $logger         Defines a target for all the logs.
-     * @param int             $commandWorkers Maximum accepted command requests.
-     * @param int             $sessionWorkers Maximum allowed command responses.
-     * @param int             $pruneInterval  How often session info is purged.
+     * @var LoggerInterface Defines a target for all the logs.
      */
-    private function __construct(
-        float $defaultTimeout,
-        LoggerInterface $logger,
-        int $commandWorkers,
-        int $sessionWorkers,
-        int $pruneInterval
-    ) {
-        $this->defaultTimeout = $defaultTimeout;
-        $this->logger = $logger;
-        $this->commandWorkers = $commandWorkers;
-        $this->sessionWorkers = $sessionWorkers;
-        $this->pruneInterval = $pruneInterval;
-    }
+    private $logger;
 
     /**
      * DefaultTimeout specifies the maximum amount of time to wait for a call to
@@ -104,9 +112,12 @@ final class Config
     private $defaultTimeout;
 
     /**
-     * @var LoggerInterface Defines a target for all the logs.
+     * PruneInterval specifies how often, in seconds, the cache of remote
+     * session information is purged of unused data.
+     *
+     * @var How often session info is purged in seconds.
      */
-    private $logger;
+    private $pruneInterval;
 
     /**
      * CommandWorkers is the number of incoming command REQUESTS that are
@@ -124,11 +135,4 @@ final class Config
      * @var int Maximum allowed command responses.
      */
     private $sessionWorkers;
-
-    /**
-     * PruneInterval specifies how often the cache of remote session information
-     * is purged of unused data.
-     * @var How often session info is purged.
-     */
-    private $pruneInterval;
 }
