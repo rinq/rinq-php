@@ -162,7 +162,6 @@
         },
         {
             "name": "react/promise",
-<<<<<<< HEAD
             "version": "v2.5.1",
             "source": {
                 "type": "git",
@@ -173,29 +172,14 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/reactphp/promise/zipball/62785ae604c8d69725d693eb370e1d67e94c4053",
                 "reference": "62785ae604c8d69725d693eb370e1d67e94c4053",
-=======
-            "version": "v2.5.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/reactphp/promise.git",
-                "reference": "2760f3898b7e931aa71153852dcd48a75c9b95db"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/promise/zipball/2760f3898b7e931aa71153852dcd48a75c9b95db",
-                "reference": "2760f3898b7e931aa71153852dcd48a75c9b95db",
->>>>>>> master
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.4.0"
             },
-<<<<<<< HEAD
             "require-dev": {
                 "phpunit/phpunit": "~4.8"
             },
-=======
->>>>>>> master
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -220,11 +204,7 @@
                 "promise",
                 "promises"
             ],
-<<<<<<< HEAD
             "time": "2017-03-25T12:08:31+00:00"
-=======
-            "time": "2016-12-22T14:09:01+00:00"
->>>>>>> master
         }
     ],
     "packages-dev": [

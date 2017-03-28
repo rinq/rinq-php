@@ -8,6 +8,7 @@ use Bunny\Channel;
 use Psr\Log\LoggerInterface;
 use Rinq\Ident\PeerId;
 use Rinq\Internal\Command\Server as ServerInterface;
+
 /**
  * Server processes command requests made by an invoker.
  */
@@ -16,14 +17,17 @@ class Server implements ServerInterface
     public function __construct(
         PeerId $peerId,
         Channel $channel,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        Queues $queues = null
     ) {
+        if (null === $queues) {
+            $queues = new Queues();
+        }
+
         $this->peerId = $peerId;
         $this->channel = $channel;
         $this->logger = $logger;
-
-        $this->handlers = [];
-        $this->queues = [];
+        $this->queues = $queues;
     }
 
     /**
@@ -38,21 +42,22 @@ class Server implements ServerInterface
         // we're already listening, just swap the handler
         if (array_key_exists($namespace, $this->handlers)) {
             $this->handlers[$namespace] = $handler;
+
             return false;
         }
 
         $this->channel->queueBind(
-            $this->peerId->shortString() . '.req',  // $queue = ''
-            'cmd.mc',                               // $exchange
-            $namespace                              // $routingKey = ''
+            $this->queues->requestQueue($this->peerId), // $queue = ''
+            Exchanges::multicastExchange,               // $exchange
+            $namespace                                  // $routingKey = ''
         );
 
-        $queue = $this->getQueue($namespace);
+        $queue = $this->queues->get($namespace);
 
         $this->channel->consume(
             $handler,
             $queue,     // $queue
-            $queue,     // $consumerTag
+            $queue      // $consumerTag
         );
 
         $this->handlers[$namespace] = $handler;
@@ -74,52 +79,21 @@ class Server implements ServerInterface
         }
 
         $this->channel->queueUnbind(
-            $this->peerId->shortString() . '.req',  // $queue = ''
-            'cmd.mc',                               // $exchange,
-            $namespace                              // $routingKey = ''
+            $this->queues->requestQueue($this->peerId), // $queue = ''
+            Exchanges::multicastExchange,               // $exchange,
+            $namespace                                  // $routingKey = ''
         );
 
         // balanced queue
-        $this->channel->cancel('cmd.' . $namespace);
+        $this->channel->cancel($this->queues->balancedRequestQueue($namespace));
 
         unset($this->handlers[$namespace]);
 
         return true;
     }
 
-    private function getQueue(Channel $channel, string $namespace)
-    {
-        if (array_key_exists($namespace, $this->queues) {
-            return $this->queues[$namespace];
-        }
-
-        $queue = 'cmd.' . $namespace;
-
-        $channel.queueDeclare(
-            $queue,
-            false, // $passive
-            true,  // durable
-            false, // exclusive,
-            false, // autoDelete
-            false, // noWait
-            // amqp.Table{"x-max-priority": priorityCount}, // TODO: priorities??
-        );
-
-        $channel.queueBind(
-            $queue,
-            'cmd.bal',
-            $namespace
-        );
-
-        $this->queues[$namespace] = $queue
-
-        return $queue;
-    }
-
     private $peerId;
     private $channel;
     private $logger;
     private $handlers;
-    private $queues;
-
 }
