@@ -72,7 +72,7 @@ interface Invoker
      */
     public function setAsyncHandler(
         SessionId $sessionId,
-        AsyncHandler $handler
+        AsyncHandler $handler = null
     ): void;
 
     /**

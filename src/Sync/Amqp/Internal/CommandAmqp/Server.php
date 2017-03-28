@@ -18,12 +18,8 @@ class Server implements ServerInterface
         PeerId $peerId,
         Channel $channel,
         LoggerInterface $logger,
-        Queues $queues = null
+        Queues $queues
     ) {
-        if (null === $queues) {
-            $queues = new Queues();
-        }
-
         $this->peerId = $peerId;
         $this->channel = $channel;
         $this->logger = $logger;

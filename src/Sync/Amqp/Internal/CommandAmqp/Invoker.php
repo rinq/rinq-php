@@ -18,6 +18,19 @@ use Rinq\Internal\Command\Invoker as InvokerInterface;
  */
 class Invoker implements InvokerInterface
 {
+    private function __construct(
+        PeerId $peerId,
+        Queues $queues,
+        Channel $channel
+        InvokerLogging $invokerLogger
+        int $defaultTimeout, // last becuase the async version is followed by preFetch
+    ) {
+        $this->peerId = $peerId;
+        $this->queues = $queues;
+        $this->channel = $channel;
+        $this->invokerLogger = $invokerLogger;
+        $this->defaultTimeout = $defaultTimeout;
+    }
     /**
      * Sends a unicast command request to a specific peer and blocks until a
      * response is received or the context deadline is met.
@@ -76,8 +89,14 @@ class Invoker implements InvokerInterface
      */
     public function setAsyncHandler(
         SessionId $sessionId,
-        AsyncHandler $handler
+        AsyncHandler $handler = null
     ): void {
+        if (null === $handler) {
+            unset($this->handlers[$sessionId]);
+            return;
+        }
+
+        $this->handlers[$sessionId] = $handler;
     }
 
     /**
@@ -94,6 +113,22 @@ class Invoker implements InvokerInterface
         mixed $payload,
         string &$traceId
     ): void {
+        // msg := &amqp.Publishing{
+        // 	MessageId: msgID.String(),
+        // 	Priority:  callBalancedPriority,
+        // }
+        // packRequest(msg, ns, cmd, out, replyUncorrelated)
+        // traceID := amqputil.PackTrace(ctx, msg)
+
+        $this->send($context, Exchanges::balancedExchange, $namespace, $)
+        $this->invokerLogger->logBalancedExecute(
+            $this->peerId,
+            $messageId,
+            $namespace,
+            $command,
+            $traceId,
+            $payload
+        );
     }
 
     /**
@@ -111,4 +146,45 @@ class Invoker implements InvokerInterface
         string &$traceId
     ): void {
     }
+
+    /**
+     * send publishes a message for a command request
+     */
+    public function send(
+        Context $context,
+        string $exchange,
+        string $key,
+        string $message
+    ) {
+        // TODO: Context is not used??
+        $this->publish($exchange, $key, $message);
+    }
+
+    /**
+     * publish sends an command request to the broker
+     */
+    public function publish(
+        string $exchange,
+        string $key,
+        string $message
+    ) {
+        if ($exchange === Exchanges::balancedExchange) {
+            $queue = $this->queues.get($channel, $key);
+        }
+
+        $this->channel->publish(
+            $message    // message
+            [],         // headers
+            $exchange,  // exchange
+            $key        // routing key
+        );
+    }
+
+
+    private $peerId;
+    private $queues;
+    private $channel;
+    private $invokerLogger;
+    private $defaultTimeout;
+    private $handlers = [];
 }
