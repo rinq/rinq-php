@@ -13,24 +13,24 @@ class Exchanges implements ServerInterface
      * unicastExchange is the exchange used to publish internal command requests
      * directly to a specific peer.
      */
-    const unicastExchange = 'cmd.uc';
+    public const unicastExchange = 'cmd.uc';
 
     /**
      * multicastExchange is the exchange used to publish comman requests to the
      * all peers that can service the namespace.
      */
-    const multicastExchange = 'cmd.mc';
+    public const multicastExchange = 'cmd.mc';
 
     /**
      * balancedExchange is the exchange used publish command requests to the
      * first available peer that can service the namespace.
      */
-    const balancedExchange = 'cmd.bal';
+    public const balancedExchange = 'cmd.bal';
 
     /**
      * responseExchange is the exchange used to publish command responses.
      */
-    const responseExchange = 'cmd.rsp';
+    public const responseExchange = 'cmd.rsp';
 
     /**
      * Declare the exchanges.

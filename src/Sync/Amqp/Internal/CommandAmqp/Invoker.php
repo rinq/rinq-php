@@ -4,6 +4,7 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
+use CBOR\CBOREncoder;
 use Rinq\Context;
 use Rinq\Ident\MessageId;
 use Rinq\Ident\PeerId;
@@ -21,8 +22,9 @@ class Invoker implements InvokerInterface
     private function __construct(
         PeerId $peerId,
         Queues $queues,
-        Channel $channel
-        InvokerLogging $invokerLogger
+        Channel $channel,
+        InvokerLogging $invokerLogger,
+        Message $message,
         int $defaultTimeout, // last becuase the async version is followed by preFetch
     ) {
         $this->peerId = $peerId;
@@ -113,20 +115,26 @@ class Invoker implements InvokerInterface
         mixed $payload,
         string &$traceId
     ): void {
-        // msg := &amqp.Publishing{
-        // 	MessageId: msgID.String(),
-        // 	Priority:  callBalancedPriority,
-        // }
-        // packRequest(msg, ns, cmd, out, replyUncorrelated)
-        // traceID := amqputil.PackTrace(ctx, msg)
+        $this->send(
+            $context,
+            Exchanges::balancedExchange,
+            $namespace,
+            $payload,
+            [
+                'correlation-id' => $messageId,
+                'x-max-priority' => 10, // TODO: need proper priorities
+                Message::namespaceHeader => $namespace,
+                Message::commandHeader => $command,
+                'reply-to' => Message::replyNone,
+            ]
+        );
 
-        $this->send($context, Exchanges::balancedExchange, $namespace, $)
         $this->invokerLogger->logBalancedExecute(
             $this->peerId,
             $messageId,
             $namespace,
             $command,
-            $traceId,
+            $context->traceId(),
             $payload
         );
     }
@@ -154,10 +162,11 @@ class Invoker implements InvokerInterface
         Context $context,
         string $exchange,
         string $key,
-        string $message
+        string $message,
+        array $headers = []
     ) {
         // TODO: Context is not used??
-        $this->publish($exchange, $key, $message);
+        $this->publish($exchange, $key, $message, $headers);
     }
 
     /**
@@ -166,17 +175,18 @@ class Invoker implements InvokerInterface
     public function publish(
         string $exchange,
         string $key,
-        string $message
+        mixed $payload,
+        array $headers = []
     ) {
         if ($exchange === Exchanges::balancedExchange) {
             $queue = $this->queues.get($channel, $key);
         }
 
         $this->channel->publish(
-            $message    // message
-            [],         // headers
-            $exchange,  // exchange
-            $key        // routing key
+            CBOREncoder::encode($payload),  // message
+            $headers,                       // headers
+            $exchange,                      // exchange
+            $key                            // routing key
         );
     }
 

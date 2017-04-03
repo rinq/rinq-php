@@ -4,8 +4,49 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "e3b753402d6564a2ef1f553d71648582",
+    "content-hash": "b3d2be5fea3852a2f682a6e928d0b1c1",
     "packages": [
+        {
+            "name": "2tvenom/cborencode",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/2tvenom/CBOREncode.git",
+                "reference": "be94b2a983ada9cd59f9d64f14eb730c214cd32d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/2tvenom/CBOREncode/zipball/be94b2a983ada9cd59f9d64f14eb730c214cd32d",
+                "reference": "be94b2a983ada9cd59f9d64f14eb730c214cd32d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "CBOR": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "PHP"
+            ],
+            "authors": [
+                {
+                    "name": "Pavel <Ven> Gulbin",
+                    "email": "2tvenom@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "CBOR encoder for PHP",
+            "homepage": "https://github.com/2tvenom/CBOREncode",
+            "keywords": [
+                "cbor"
+            ],
+            "time": "2015-10-07 17:13:58"
+        },
         {
             "name": "bunny/bunny",
             "version": "v0.2.4",
@@ -1453,7 +1494,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "2tvenom/cborencode": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
