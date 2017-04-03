@@ -24,9 +24,9 @@ class Invoker implements InvokerInterface
         Queues $queues,
         Channel $channel,
         InvokerLogging $invokerLogger,
-        Message $message,
-        int $defaultTimeout, // last becuase the async version is followed by preFetch
-    ) {
+        int $defaultTimeout // last becuase the async version is followed by preFetch
+)
+    {
         $this->peerId = $peerId;
         $this->queues = $queues;
         $this->channel = $channel;
@@ -95,6 +95,7 @@ class Invoker implements InvokerInterface
     ): void {
         if (null === $handler) {
             unset($this->handlers[$sessionId]);
+
             return;
         }
 
@@ -156,7 +157,7 @@ class Invoker implements InvokerInterface
     }
 
     /**
-     * send publishes a message for a command request
+     * send publishes a message for a command request.
      */
     public function send(
         Context $context,
@@ -170,7 +171,7 @@ class Invoker implements InvokerInterface
     }
 
     /**
-     * publish sends an command request to the broker
+     * publish sends an command request to the broker.
      */
     public function publish(
         string $exchange,
@@ -179,7 +180,7 @@ class Invoker implements InvokerInterface
         array $headers = []
     ) {
         if ($exchange === Exchanges::balancedExchange) {
-            $queue = $this->queues.get($channel, $key);
+            $queue = $this->queues . get($channel, $key);
         }
 
         $this->channel->publish(
@@ -189,7 +190,6 @@ class Invoker implements InvokerInterface
             $key                            // routing key
         );
     }
-
 
     private $peerId;
     private $queues;

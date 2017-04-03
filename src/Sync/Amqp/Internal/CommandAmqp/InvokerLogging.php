@@ -5,10 +5,8 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
 use Psr\Log\LoggerInterface;
-use Rinq\Context;
 use Rinq\Ident\MessageId;
 use Rinq\Ident\PeerId;
-use Rinq\Internal\Command\Invoker as InvokerInterface;
 
 class InvokerLogging
 {
@@ -209,18 +207,18 @@ class InvokerLogging
         string $traceId,
         $payload
     ) {
-        if(!$this->logger) {
-            return
+        if (!$this->logger) {
+            return;
         }
 
         $this->logger->debug(
             '%s invoker sent \'%s::%s\' execution %s [%s] >>> %s',
-            $peerId.ShortString(),
+            $peerId->shortString(),
             $namespace,
             $command,
-            $messageId.ShortString(),
+            $messageId->shortString(),
             $traceId,
-            $payload,
+            $payload
         );
     }
 /*
