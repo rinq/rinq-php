@@ -8,7 +8,7 @@ use Bunny\Channel;
 use Rinq\Ident\PeerId;
 use Rinq\Internal\Command\Server as ServerInterface;
 
-class Queues implements ServerInterface
+class Queues
 {
     /**
      * balancedRequestQueue returns the name of the queue used for balanced
@@ -16,7 +16,7 @@ class Queues implements ServerInterface
      */
     public function balancedRequestQueue(string $namespace): string
     {
-        return 'cmd.' + $namespace;
+        return 'cmd.' . $namespace;
     }
 
     /**
@@ -25,7 +25,7 @@ class Queues implements ServerInterface
      */
     public function requestQueue(PeerId $peerId): string
     {
-        return $peerId . ShortString() . '.req';
+        return $peerId->shortString() . '.req';
     }
 
     /**
@@ -33,20 +33,20 @@ class Queues implements ServerInterface
      */
     public function responseQueue(PeerId $peerId): string
     {
-        return $peerId . ShortString() . '.rsp';
+        return $peerId->shortString() . '.rsp';
     }
 
     /**
      * Get declares the AMQP queue used for balanced command requests in the given
      * namespace and returns the queue name.
      */
-    private function get(Channel $channel, string $namespace): string
+    public function get(Channel $channel, string $namespace): string
     {
         if (array_key_exists($namespace, $this->queues)) {
             return $this->queues[$namespace];
         }
 
-        $queue = 'cmd.' . $namespace;
+        $queue = $this->balancedRequestQueue($namespace);
 
         $channel->queueDeclare(
             $queue,
@@ -55,10 +55,10 @@ class Queues implements ServerInterface
             false, // exclusive,
             false, // autoDelete
             false, // noWait
-            ['x-max-priority' => 10] // TODO: need proper priorities
+            ['x-max-priority' => 3] // TODO: need proper priorities
         );
 
-        $channel . queueBind(
+        $channel->queueBind(
             $queue,
             'cmd.bal',
             $namespace

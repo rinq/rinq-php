@@ -20,7 +20,7 @@ class InvokerLogging
         string $messageId
     ) {
         if(!$this->logger) {
-            return
+            return;
         }
 
         $this->logger->debug(
@@ -38,7 +38,7 @@ class InvokerLogging
         err error,
     ) {
         if(!$this->logger) {
-            return
+            return;
         }
 
         $this->logger->debug(
@@ -59,7 +59,7 @@ class InvokerLogging
     $payload,
 ) {
         if(!$this->logger) {
-            return
+            return;
         }
 
         $this->logger->debug(
@@ -83,7 +83,7 @@ class InvokerLogging
     $payload,
 ) {
         if(!$this->logger) {
-            return
+            return;
         }
 
         $this->logger->debug(
@@ -107,7 +107,7 @@ class InvokerLogging
     err error,
 ) {
         if(!$this->logger) {
-            return
+            return;
         }
 
     switch e := err.(type) {
@@ -161,7 +161,7 @@ class InvokerLogging
     err error,
 ) {
         if(!$this->logger) {
-            return
+            return;
         }
 
         $this->logger->debug(
@@ -185,7 +185,7 @@ class InvokerLogging
     err error,
 ) {
         if(!$this->logger) {
-            return
+            return;
         }
 
         $this->logger->debug(
@@ -212,13 +212,15 @@ class InvokerLogging
         }
 
         $this->logger->debug(
-            '%s invoker sent \'%s::%s\' execution %s [%s] >>> %s',
-            $peerId->shortString(),
-            $namespace,
-            $command,
-            $messageId->shortString(),
-            $traceId,
-            $payload
+            sprintf(
+                '%s invoker sent \'%s::%s\' execution %s [%s] >>> %s',
+                $peerId->shortString(),
+                $namespace,
+                $command,
+                $messageId->shortString(),
+                $traceId,
+                $payload
+            )
         );
     }
 /*
@@ -232,7 +234,7 @@ class InvokerLogging
     err error,
 ) {
         if(!$this->logger) {
-            return
+            return;
         }
 
         $this->logger->debug(
@@ -245,28 +247,28 @@ class InvokerLogging
     payload,
     )
 }
-
-    public function logInvokerStart(
-    PeerId $peerId,
-    preFetch int,
-) {
+*/
+    public function logInvokerStart(PeerId $peerId, int $preFetch)
+    {
         if(!$this->logger) {
-            return
+            return;
         }
 
         $this->logger->debug(
-    '%s invoker started (pre-fetch: %d)',
-    peerID.ShortString(),
-    preFetch,
-    )
+            sprintf(
+                '%s invoker started (pre-fetch: %d)',
+                $peerId->shortString(),
+                $preFetch
+            )
+        );
 }
-
+/*
     public function logInvokerStopping(
     PeerId $peerId,
     pending int,
 ) {
         if(!$this->logger) {
-            return
+            return;
         }
 
         $this->logger->debug(
@@ -281,7 +283,7 @@ class InvokerLogging
     err error,
 ) {
         if(!$this->logger) {
-            return
+            return;
         }
 
     if err == nil {

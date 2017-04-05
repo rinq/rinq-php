@@ -17,13 +17,14 @@ class Server implements ServerInterface
     public function __construct(
         PeerId $peerId,
         Channel $channel,
-        LoggerInterface $logger,
+        ServerLogging $logger,
         Queues $queues
     ) {
         $this->peerId = $peerId;
         $this->channel = $channel;
         $this->logger = $logger;
         $this->queues = $queues;
+        $this->handlers = [];
     }
 
     /**
@@ -48,7 +49,7 @@ class Server implements ServerInterface
             $namespace                                  // $routingKey = ''
         );
 
-        $queue = $this->queues->get($namespace);
+        $queue = $this->queues->get($this->channel, $namespace);
 
         $this->channel->consume(
             $handler,
@@ -86,6 +87,56 @@ class Server implements ServerInterface
         unset($this->handlers[$namespace]);
 
         return true;
+    }
+
+    // Do we really need a handler? go acts differently so maybe.
+    public function initialize(callable $handler)
+    {
+        $this->channel->qos(
+            0,  // $prefetchSize = 0,
+            1   // $prefetchCount = 0
+        );
+
+        // TODO:
+    	// s.channel.NotifyClose(s.amqpClosed)
+
+        $queue = $this->queues->requestQueue($this->peerId);
+
+        $this->channel->queueDeclare(
+            $queue,
+            false,  // passive
+            false,  // durable
+            true,   // exclusive,
+            false,  // autoDelete
+            false,  // noWait
+            ['x-max-priority' => 3] // TODO: need proper priorities
+    	);
+
+        $this->channel->queueBind(
+            $queue,
+            Exchanges::unicastExchange,
+            $this->peerId
+        );
+
+        $this->channel->consume(
+            $handler,
+            $queue,
+            $queue, // use queue name as consumer tag
+            false,  // no local
+            false,  // autoAck
+            true    // exclusive
+        );
+    }
+
+    public function run()
+    {
+        $this->logger->logServerStart($this->peerId, 1);
+    }
+
+    public function stop()
+    {
+        $this->logger->logServerStopping($this->peerId, 0);
+        $this->logger->logServerStop($this->peerId);
     }
 
     private $peerId;

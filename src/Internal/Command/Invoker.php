@@ -5,6 +5,7 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq\Internal\Command;
 
 use Rinq\Context;
+use Rinq\Ident\SessionId;
 use Rinq\Ident\MessageId;
 use Rinq\Ident\PeerId;
 
@@ -31,7 +32,7 @@ interface Invoker
         PeerId $target,
         string $namespace,
         string $command,
-        mixed $payload,
+        $payload,
         string &$traceId
     );
 
@@ -48,7 +49,7 @@ interface Invoker
         MessageId $messageId,
         string $namespace,
         string $command,
-        mixed $payload,
+        $payload,
         string &$traceId
     );
 
@@ -63,7 +64,7 @@ interface Invoker
         MessageId $messageId,
         string $namespace,
         string $command,
-        mixed $payload,
+        $payload,
         string &$traceId
     ): void;
 
@@ -72,7 +73,7 @@ interface Invoker
      */
     public function setAsyncHandler(
         SessionId $sessionId,
-        AsyncHandler $handler = null
+        callable $handler = null
     ): void;
 
     /**
@@ -86,7 +87,7 @@ interface Invoker
         MessageId $messageId,
         string $namespace,
         string $command,
-        mixed $payload,
+        $payload,
         string &$traceId
     ): void;
 
@@ -101,7 +102,7 @@ interface Invoker
         MessageId $messageId,
         string $namespace,
         string $command,
-        mixed $payload,
+        $payload,
         string &$traceId
     ): void;
 }

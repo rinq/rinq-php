@@ -7,7 +7,7 @@ namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 use Bunny\Channel;
 use Rinq\Internal\Command\Server as ServerInterface;
 
-class Exchanges implements ServerInterface
+class Exchanges
 {
     /**
      * unicastExchange is the exchange used to publish internal command requests

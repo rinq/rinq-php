@@ -4,8 +4,10 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
+use Bunny\Channel;
 use CBOR\CBOREncoder;
 use Rinq\Context;
+use Rinq\Ident\SessionId;
 use Rinq\Ident\MessageId;
 use Rinq\Ident\PeerId;
 use Rinq\Internal\Command\Invoker as InvokerInterface;
@@ -19,12 +21,12 @@ use Rinq\Internal\Command\Invoker as InvokerInterface;
  */
 class Invoker implements InvokerInterface
 {
-    private function __construct(
+    public function __construct(
         PeerId $peerId,
         Queues $queues,
         Channel $channel,
         InvokerLogging $invokerLogger,
-        int $defaultTimeout // last becuase the async version is followed by preFetch
+        float $defaultTimeout // last becuase the async version is followed by preFetch
 )
     {
         $this->peerId = $peerId;
@@ -47,7 +49,7 @@ class Invoker implements InvokerInterface
         PeerId $target,
         string $namespace,
         string $command,
-        mixed $payload,
+        $payload,
         string &$traceId
     ) {
     }
@@ -65,7 +67,7 @@ class Invoker implements InvokerInterface
         MessageId $messageId,
         string $namespace,
         string $command,
-        mixed $payload,
+        $payload,
         string &$traceId
     ) {
     }
@@ -81,7 +83,7 @@ class Invoker implements InvokerInterface
         MessageId $messageId,
         string $namespace,
         string $command,
-        mixed $payload,
+        $payload,
         string &$traceId
     ): void {
     }
@@ -91,15 +93,16 @@ class Invoker implements InvokerInterface
      */
     public function setAsyncHandler(
         SessionId $sessionId,
-        AsyncHandler $handler = null
+        callable $handler = null
     ): void {
-        if (null === $handler) {
-            unset($this->handlers[$sessionId]);
-
-            return;
-        }
-
-        $this->handlers[$sessionId] = $handler;
+        // TODO: should this only be in the async invoker?
+        // if (null === $handler) {
+        //     unset($this->handlers[$sessionId]);
+        //
+        //     return;
+        // }
+        //
+        // $this->handlers[$sessionId] = $handler;
     }
 
     /**
@@ -113,7 +116,7 @@ class Invoker implements InvokerInterface
         MessageId $messageId,
         string $namespace,
         string $command,
-        mixed $payload,
+        $payload,
         string &$traceId
     ): void {
         $this->send(
@@ -123,7 +126,7 @@ class Invoker implements InvokerInterface
             $payload,
             [
                 'correlation-id' => $messageId,
-                'x-max-priority' => 10, // TODO: need proper priorities
+                'x-max-priority' => 3,  // TODO: need proper priorities
                 Message::namespaceHeader => $namespace,
                 Message::commandHeader => $command,
                 'reply-to' => Message::replyNone,
@@ -151,9 +154,51 @@ class Invoker implements InvokerInterface
         MessageId $messageId,
         string $namespace,
         string $command,
-        mixed $payload,
+        $payload,
         string &$traceId
     ): void {
+    }
+
+    public function initialize($handler)
+    {
+        $this->channel->qos(
+            0,  // $prefetchSize = 0,
+            1   // $prefetchCount = 0
+        );
+
+        // TODO:
+        // i.channel.NotifyClose(i.amqpClosed)
+
+        $queue = $this->queues->responseQueue($this->peerId);
+
+        $this->channel->queueDeclare(
+            $queue,
+            false,  // passive
+            false,  // durable
+            true    // exclusive
+        );
+
+        $this->channel->queueBind(
+            $queue,
+            Exchanges::responseExchange,
+            $this->peerId . '.*'
+        );
+
+        $this->channel->consume(
+            $handler,
+            $queue,
+            $queue, // use queue name as consumer tag
+            false,  // no local
+            false,  // autoAck
+            true    // exclusive
+        );
+    }
+
+
+    public function run()
+    {
+        // synchronous invoker has a preFetch of 1
+        $this->invokerLogger->logInvokerStart($this->peerId, 1);
     }
 
     /**
@@ -176,11 +221,11 @@ class Invoker implements InvokerInterface
     public function publish(
         string $exchange,
         string $key,
-        mixed $payload,
+        $payload,
         array $headers = []
     ) {
         if ($exchange === Exchanges::balancedExchange) {
-            $queue = $this->queues . get($channel, $key);
+            $queue = $this->queues->get($channel, $key);
         }
 
         $this->channel->publish(

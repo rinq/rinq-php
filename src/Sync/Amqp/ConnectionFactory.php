@@ -9,6 +9,11 @@ use Bunny\Constants;
 use Bunny\Exception\ClientException;
 use Rinq\Ident\PeerId;
 use Rinq\Sync\Config;
+use Rinq\Sync\Amqp\Internal\CommandAmqp\Queues;
+use Rinq\Sync\Amqp\Internal\CommandAmqp\Server;
+use Rinq\Sync\Amqp\Internal\CommandAmqp\InvokerLogging;
+use Rinq\Sync\Amqp\Internal\CommandAmqp\ServerLogging;
+use Rinq\Sync\Amqp\Internal\CommandAmqp\Invoker;
 
 /**
  * Connects to an AMQP-based Rinq network, establishing the peer's unique
@@ -29,18 +34,45 @@ final class ConnectionFactory
         $this->broker->connect();
 
         $peerId = $this->establishIdentity();
+        $queues = new Queues();
+        $channel = $this->broker->channel();
 
-        // return Peer::create(
-        //     $peerId,
-        //     $this->broker,
+        $invoker = new Invoker(
+            $peerId,
+            $queues,
+            $channel,
+            new InvokerLogging($this->config->logger()),
+            $this->config->defaultTimeout()
+        );
+
+        $invoker->initialize(function (Message $message, Channel $channel, Client $bunny) {
+            var_dump($message);
+        });
+        $invoker->run(); // TODO: run not done yet.
+
+        $server = new Server(
+            $peerId,
+            $this->broker->channel(),
+            new ServerLogging($this->config->logger()),
+            $queues
+        );
+        $server->run(); // TODO: run not done yet.
+
+        $server->initialize(function (Message $message, Channel $channel, Client $bunny) {
+            var_dump($message);
+        });
+
+        return Peer::create(
+            $peerId,
+            $this->broker,
         //     localStore,
         //     remoteStore,
-        //     invoker,
-        //     server,
+            $invoker,
+            $server,
         //     notifier,
         //     listener,
-        //     $this->config->logger()
-        // );
+            $this->config->logger()
+        );
     }
 
     /**
