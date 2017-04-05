@@ -5,7 +5,6 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
 use Bunny\Channel;
-use Rinq\Internal\Command\Server as ServerInterface;
 
 class Exchanges
 {

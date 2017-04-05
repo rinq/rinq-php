@@ -6,7 +6,6 @@ namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
 use Bunny\Channel;
 use Rinq\Ident\PeerId;
-use Rinq\Internal\Command\Server as ServerInterface;
 
 class Queues
 {

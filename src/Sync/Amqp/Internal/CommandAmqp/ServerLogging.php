@@ -185,9 +185,9 @@ class ServerLogging
     )
 }
 */
-    public function logServerStart( PeerId $peerId, int $preFetch )
+    public function logServerStart(PeerId $peerId, int $preFetch)
     {
-        if(!$this->logger) {
+        if (!$this->logger) {
             return;
         }
 
@@ -200,9 +200,9 @@ class ServerLogging
         );
     }
 
-    public function logServerStopping( PeerId $peerId, int $pending )
+    public function logServerStopping(PeerId $peerId, int $pending)
     {
-        if(!$this->logger) {
+        if (!$this->logger) {
             return;
         }
 
@@ -215,9 +215,9 @@ class ServerLogging
         );
     }
 
-    public function logServerStop( PeerId $peerId, string $error = null)
+    public function logServerStop(PeerId $peerId, string $error = null)
     {
-        if(!$this->logger) {
+        if (!$this->logger) {
             return;
         }
 

@@ -5,9 +5,9 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq\Internal\Command;
 
 use Rinq\Context;
-use Rinq\Ident\SessionId;
 use Rinq\Ident\MessageId;
 use Rinq\Ident\PeerId;
+use Rinq\Ident\SessionId;
 
 /**
  * Invoker is a low-level RPC interface, it is used to implement the "command

@@ -5,7 +5,6 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq\Sync\Amqp;
 
 use Psr\Log\LoggerInterface;
-use Rinq\Ident\MessageId;
 use Rinq\Ident\PeerId;
 
 class Logging
@@ -16,9 +15,8 @@ class Logging
     }
 
     public function logStartedListening(
-
         PeerId $peerId,
-    	string $namespace,
+        string $namespace
     ) {
         $this->logger->debug(
             sprintf(
@@ -35,7 +33,7 @@ class Logging
     ) {
         $this->logger->debug(
             sprintf(
-                '%s stopped listening for command requests in \'%s\' namespace'
+                '%s stopped listening for command requests in \'%s\' namespace',
                 $peerId->shortString(),
                 $namespace
             )

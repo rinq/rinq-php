@@ -6,16 +6,12 @@ namespace Rinq\Sync\Amqp;
 
 use Bunny\Channel;
 use Bunny\Client;
-use Bunny\Constants;
-use Bunny\Exception\ClientException;
 use Bunny\Message;
-use Psr\Log\LoggerInterface;
 use Rinq\Ident\PeerId;
 use Rinq\Internal\Command\Invoker;
 use Rinq\Internal\Command\Server;
 use Rinq\Peer as PeerInterface;
 use Rinq\Session;
-use Rinq\Sync\Config;
 
 /*
  * Peer represents a connection to a Rinq network.
@@ -126,7 +122,7 @@ final class Peer implements PeerInterface
     {
         $this->server->unlisten($namespace);
 
-        $this->logger->logStoppedListening($this->peerId, $namespace)
+        $this->logger->logStoppedListening($this->peerId, $namespace);
     }
 
     /**
@@ -230,7 +226,7 @@ final class Peer implements PeerInterface
         Server $server,
         //     notifier,
         //     listener,
-        LoggerInterface $logger
+        Logging $logger
     ) {
         $this->peerId = $peerId;
         $this->broker = $broker;

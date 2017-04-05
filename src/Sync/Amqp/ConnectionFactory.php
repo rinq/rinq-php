@@ -8,12 +8,12 @@ use Bunny\Client;
 use Bunny\Constants;
 use Bunny\Exception\ClientException;
 use Rinq\Ident\PeerId;
-use Rinq\Sync\Config;
+use Rinq\Sync\Amqp\Internal\CommandAmqp\Invoker;
+use Rinq\Sync\Amqp\Internal\CommandAmqp\InvokerLogging;
 use Rinq\Sync\Amqp\Internal\CommandAmqp\Queues;
 use Rinq\Sync\Amqp\Internal\CommandAmqp\Server;
-use Rinq\Sync\Amqp\Internal\CommandAmqp\InvokerLogging;
 use Rinq\Sync\Amqp\Internal\CommandAmqp\ServerLogging;
-use Rinq\Sync\Amqp\Internal\CommandAmqp\Invoker;
+use Rinq\Sync\Config;
 
 /**
  * Connects to an AMQP-based Rinq network, establishing the peer's unique
@@ -71,7 +71,7 @@ final class ConnectionFactory
             $server,
         //     notifier,
         //     listener,
-            $this->config->logger()
+            new Logging($this->config->logger())
         );
     }
 

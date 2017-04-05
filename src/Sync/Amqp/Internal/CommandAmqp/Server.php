@@ -5,7 +5,6 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
 use Bunny\Channel;
-use Psr\Log\LoggerInterface;
 use Rinq\Ident\PeerId;
 use Rinq\Internal\Command\Server as ServerInterface;
 
@@ -98,7 +97,7 @@ class Server implements ServerInterface
         );
 
         // TODO:
-    	// s.channel.NotifyClose(s.amqpClosed)
+        // s.channel.NotifyClose(s.amqpClosed)
 
         $queue = $this->queues->requestQueue($this->peerId);
 
@@ -110,7 +109,7 @@ class Server implements ServerInterface
             false,  // autoDelete
             false,  // noWait
             ['x-max-priority' => 3] // TODO: need proper priorities
-    	);
+        );
 
         $this->channel->queueBind(
             $queue,

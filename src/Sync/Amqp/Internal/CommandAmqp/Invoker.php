@@ -7,9 +7,9 @@ namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 use Bunny\Channel;
 use CBOR\CBOREncoder;
 use Rinq\Context;
-use Rinq\Ident\SessionId;
 use Rinq\Ident\MessageId;
 use Rinq\Ident\PeerId;
+use Rinq\Ident\SessionId;
 use Rinq\Internal\Command\Invoker as InvokerInterface;
 
 /**
@@ -193,7 +193,6 @@ class Invoker implements InvokerInterface
             true    // exclusive
         );
     }
-
 
     public function run()
     {

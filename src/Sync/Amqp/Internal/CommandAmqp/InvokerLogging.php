@@ -250,7 +250,7 @@ class InvokerLogging
 */
     public function logInvokerStart(PeerId $peerId, int $preFetch)
     {
-        if(!$this->logger) {
+        if (!$this->logger) {
             return;
         }
 
@@ -261,7 +261,7 @@ class InvokerLogging
                 $preFetch
             )
         );
-}
+    }
 /*
     public function logInvokerStopping(
     PeerId $peerId,
