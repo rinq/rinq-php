@@ -5,7 +5,9 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
 use Bunny\Channel;
+use CBOR\CBOREncoder;
 use Rinq\Context;
+use Rinq\Failure;
 use Rinq\Ident\MessageId;
 use Rinq\Request;
 use Rinq\Response as ResponseInterface;
@@ -20,22 +22,15 @@ class Response implements ResponseInterface
         Channel $channel,
         MessageId $messageId,
         Request $request,
-        string $replyMode,
-        Message $message
+        string $replyMode
     ) {
-        $this->context = $context;
+        $this->context = $context; // TODO: not really used yet.
         $this->channel = $channel;
         $this->messageId = $messageId;
-        $this->request = $request;
+        $this->request = $request; // TODO: not really used.
         $this->replyMode = $replyMode;
-        $this->message = $message;
 
         $this->isClosed = false;
-    }
-
-    public function message(Message $message)
-    {
-
     }
 
     /**
@@ -44,7 +39,7 @@ class Response implements ResponseInterface
      *
      * @return bool True if the sender is waiting for the response.
      */
-    public function isRequired() bool
+    public function isRequired(): bool
     {
         if ($this->isClosed()) {
             return false;
@@ -72,17 +67,16 @@ class Response implements ResponseInterface
      *
      * @throws BlahException If the response has already been closed.
      */
-    public function done($payload)
+    public function done($payload): void
     {
         if ($this->isClosed()) {
             // TODO: create exception for this.
             throw new BlahException('Responder is already closed.');
         }
 
-        // TODO:
-        // msg := &amqp.Publishing{}
-        Message::packSuccessResponse(BunnyMessage, payload)
-        $this->respond(msg)
+        $headers = [];
+        Message::packSuccessResponse($headers);
+        $this->respond($headers, $payload);
     }
 
     /**
@@ -90,110 +84,107 @@ class Response implements ResponseInterface
      *
      * @throws BlahException If the response has already been closed.
      */
-    public function error(err error)
+    public function error($error): void
     {
         if ($this->isClosed()) {
             // TODO: create exception for this.
             throw new BlahException('Responder is already closed.');
         }
 
-        // TODO:
-        // msg := &amqp.Publishing{}
-        // packErrorResponse(msg, err)
-        // r.respond(msg)
+        $headers = [];
+        Message::packErrorResponse($headers, $error);
+        $this->respond($headers, $error);
     }
 
     /**
      * A convenience method that creates a Failure and passes it to
      * {@see $this->error()} method. The created failure is returned.
      *
-     * The failure type t is used verbatim. The failure message is formatted
-     * according to the format specifier f, interpolated with values from v.
+     * The failure $type is used verbatim. The failure message is formatted
+     * according to the format specifier $message, interpolated with values from
+     * $vars.
      *
      * @throws BlahException If the response has already been closed or if failureType is empty.
      */
-    public function fail(t, f string, v ...interface{}) rinq.Failure
+    public function fail(string $type, string $message, $vars): Failure
     {
-        // TODO
-        // err := rinq.Failure{
-        // Type:    t,
-        // Message: fmt.Sprintf(f, v...),
-        // }
-        //
-        // r.Error(err)
-        //
-        // return err
+        $error = Failure::create($type, sprintf($message, ...$vars));
+        $this->error($error);
+
+        return $error;
     }
 
     /**
      * Close finalizes the response.
      *
-     * If the origin session is expecting response it will receive a nil payload.
+     * If the origin session is expecting response it will receive a null
+     * payload.
      *
      * It is not an error to close a responder multiple times. The return value
      * is true the first time Close() is called, and false on subsequent calls.
      */
     public function close(): bool
     {
-        // r.mutex.Lock()
-        // defer r.mutex.Unlock()
-        //
-        // if r.isClosed {
-        // return false
-        // }
-        //
-        // msg := &amqp.Publishing{}
-        // packSuccessResponse(msg, nil)
-        // r.respond(msg)
-        //
-        // return true
+        if ($this->isClosed()) {
+            return false;
+        }
+
+        $headers = [];
+        Message::packSuccessResponse($headers);
+        $this->respond($headers, null);
+
+        return true;
     }
 
     public function finalize(): bool
     {
-        // r.mutex.Lock()
-        // defer r.mutex.Unlock()
-        //
-        // if r.isClosed {
-        // return true
-        // }
-        //
-        // r.isClosed = true
-        //
-        // return false
-    }
+        if ($this->isClosed()) {
+            return true;
+        }
 
-    private function respond(MessageId $messageId, $payload)
-    {
         $this->isClosed = true;
 
-        if ($this->replyMode == Message::replyNone) {
+        return false;
+    }
+
+    private function respond(array $headers, $payload)
+    {
+        $this->isClosed = true;
+        $headers = [];
+
+        if ($this->replyMode === Message::replyNone) {
             return;
         }
 
+        // TODO
         // if _, err := amqputil.PackDeadline(r.context, msg); err != nil {
         // // the context deadline has already passed
         // return
         // }
 
-        channel, err := r.channels.Get()
-        if err != nil {
-        panic(err)
-        }
-        defer r.channels.Put(channel)
-
-        amqputil.PackTrace(r.context, msg)
-
-        if (r.replyMode == Message::replyUncorrelated) {
-        packNamespaceAndCommand(msg, r.request.Namespace, r.request.Command)
-        packReplyMode(msg, r.replyMode)
+        // TODO:
+        // channel, err := r.channels.Get()
+        // if err != nil {
+        // panic(err)
+        // }
+        // defer r.channels.Put(channel)
+        //
+        // amqputil.PackTrace(r.context, msg)
+        //
+        if ($this->replyMode === Message::replyUncorrelated) {
+            $this->mesage->packNamespaceAndCommand(
+                $headers,
+                $this->request->namespace(),
+                $this->request->command()
+            );
+            Message::packReplyMode($headers, $this->replyMode);
         }
 
         $this->channel->publish(
-            CCBOREncoder::encode($payload),
-            [],
+            CBOREncoder::encode($payload),
+            $headers,
             Exchanges::responseExchange,
-            $messageId
+            $this->messageId
         );
     }
 
@@ -202,6 +193,5 @@ class Response implements ResponseInterface
     private $messageId;
     private $request;
     private $replyMode;
-    private $message;
     private $isClosed;
 }

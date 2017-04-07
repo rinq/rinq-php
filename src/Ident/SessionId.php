@@ -42,6 +42,22 @@ class SessionId
         return new self($peerId, $sequence);
     }
 
+    public static function createFromString(string $sessionId)
+    {
+        $parts = explode('.', $sessionId);
+
+        if (count($parts) !== 2 || !ctype_digit($parts[1])) {
+            throw new RuntimeException(
+                sprintf('Session ID %s is invalid.', $sessionId)
+            );
+        }
+
+        return self::create(
+            PeerId::createFromString($parts[0]),
+            (int) $parts[1]
+        );
+    }
+
     public function __toString()
     {
         return sprintf('%s.%d', $this->peerId, $this->sequence);

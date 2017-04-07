@@ -35,6 +35,22 @@ class Reference
         return new self($sessionId, $revision);
     }
 
+    public static function createFromString(string $reference)
+    {
+        $parts = explode('@', $reference);
+
+        if (count($parts) !== 2 || !ctype_digit($parts[1])) {
+            throw new RuntimeException(
+                sprintf('Reference ID %s is invalid.', $reference)
+            );
+        }
+
+        return self::create(
+            SessionId::createFromString($parts[0]),
+            (int) $parts[1]
+        );
+    }
+
     public function __toString()
     {
         return sprintf('%s@%d', $this->sessionId, $this->revision);

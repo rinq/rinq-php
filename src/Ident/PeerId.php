@@ -50,6 +50,19 @@ class PeerId
         return new self($clock, $rand);
     }
 
+    public static function createFromString(string $peerId)
+    {
+        $parts = explode('-', $peerId);
+
+        if (count($parts) !== 2) {
+            throw new RuntimeException(
+                sprintf('Peer ID %s is invalid.', $peerId)
+            );
+        }
+
+        return self::create(hexdec($parts[0]), hexdec($parts[1]));
+    }
+
     public function __toString()
     {
         return sprintf('%X-%04X', $this->clock, $this->rand);

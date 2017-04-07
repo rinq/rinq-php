@@ -3,6 +3,7 @@
 declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
+use Rinq\Failure;
 
 class Message
 {
@@ -68,7 +69,7 @@ class Message
      */
     public const replyUncorrelated = 'u';
 
-    public function packNamespaceAndCommand(
+    public static function packNamespaceAndCommand(
         array &$headers,
         string $namespace,
         string $command
@@ -77,7 +78,7 @@ class Message
         $headers[self::commandHeader] = $command;
     }
 
-    public function unpackNamespaceAndCommand(array $headers): array
+    public static function unpackNamespaceAndCommand(array $headers): array
     {
         return [
             $this->unpack($headers, self::namespaceHeader),
@@ -85,80 +86,62 @@ class Message
         ];
     }
 
-    // public function packReplyMode(array &$headers, string $replyMode)
-    // {
-    //     if (
-    //         in_array(
-    //             $replyMode,
-    //             [
-    //                 self::replyNone,
-    //                 self::replyCorrelated,
-    //                 self::replyUncorrelated,
-    //             ]
-    //         )
-    //     ) {
-    //         // TODO: Shouldn't this be called 'reply-mode'? so as not to conflict with the correlation id.
-    //         $headers['reply-to'] = $replyMode;
-    //     }
-    // }
+    public static function packReplyMode(array &$headers, string $replyMode): void
+    {
+        if (
+            in_array(
+                $replyMode,
+                [
+                    self::replyNone,
+                    self::replyCorrelated,
+                    self::replyUncorrelated,
+                ]
+            )
+        ) {
+            $headers['reply-to'] = $replyMode;
+        }
+    }
 
-    // public function unpackReplyMode(array &$headers): string
-    // {
-    //     // TODO: Shouldn't this be called 'reply-mode'? so as not to conflict with the correlation id.
-    //     return $this->unpack($headers, 'reply-to');
-    // }
+    public static function unpackReplyMode(array &$headers): string
+    {
+        return $this->unpack($headers, 'reply-to');
+    }
 
-    // public function packRequest(
-    //     array &$headers,
-    //     string $namespace,
-    //     string $command,
-    //     string $replyMode
-    // ) {
-        // $this->packNamespaceAndCommand($headers, $namespace, $command);
-        // $this->packReplyMode($headers, $replyMode);
-        // // TODO: need to pack body!
-        // msg.Body = p.Bytes()
-    // }
+    public static function packRequest(
+        array &$headers,
+        string $namespace,
+        string $command,
+        string $replyMode
+    ): void {
+        $this->packNamespaceAndCommand($headers, $namespace, $command);
+        $this->packReplyMode($headers, $replyMode);
+    }
 
-    // public function packSuccessResponse(array &$headers, $payload)
-    // {
-        // TODO
-        // msg.Type = successResponse
-        // msg.Body = p.Bytes()
-    // }
+    public static function packSuccessResponse(array &$headers)
+    {
+        $headers['type'] = self::successResponse;
+    }
 
-    // public function packErrorResponse(array &$headers, $error)
-    // {
-        // TODO
-        // if f, ok := err.(rinq.Failure); ok {
-        // if f.Type == "" {
-        //     panic("failure type is empty")
-        // }
-        //
-        // msg.Type = failureResponse
-        // msg.Body = f.Payload.Bytes()
-        //
-        // if $headers == nil {
-        // $headers = amqp.Table{}
-        // }
-        //
-        // $headers[failureTypeHeader] = f.Type
-        // if f.Message != "" {
-        // $headers[failureMessageHeader] = f.Message
-        // }
-        //
-        // } else {
-        // msg.Type = errorResponse
-        // msg.Body = []byte(err.Error())
-        // }
-    // }
+    public static function packErrorResponse(array &$headers, $error)
+    {
+        if ($error instanceof Failure) {
+            $headers['type'] = self::failureResponse;
+            $headers[self::failureTypeHeader] = $error->type();
 
-    // public function unpackResponse(array &$headers)
-    // {
-        // TODO
-        // switch msg.Type {
-        // case successResponse:
-        // return rinq.NewPayloadFromBytes(msg.Body), nil
+            if ($error->message()) {
+                $headers[self::failureMessageHeader] = $error->message();
+            }
+        } else {
+            $headers['type'] = self::errorResponse;
+        }
+    }
+
+    public static function unpackResponse(array &$headers)
+    {
+        // // TODO
+        // switch ($this->unpack['type']) {
+        //     case self::successResponse:
+        //         return rinq.NewPayloadFromBytes(msg.Body), nil
         //
         // case failureResponse:
         // failureType, _ := $headers[failureTypeHeader].(string)
@@ -181,14 +164,14 @@ class Message
         // default:
         // return nil, fmt.Errorf("malformed response, message type '%s' is unexpected", msg.Type)
         // }
-    // }
+    }
 
-    // private function unpack($headers, $key)
-    // {
-    //     if (array_key_exists($key, $headers)) {
-    //         return $headers[$key];
-    //     }
-    //
-    //     return null;
-    // }
+    private function unpack($headers, $key)
+    {
+        if (array_key_exists($key, $headers)) {
+            return $headers[$key];
+        }
+
+        return null;
+    }
 }

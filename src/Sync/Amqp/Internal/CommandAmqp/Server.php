@@ -7,8 +7,12 @@ namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 use Bunny\Channel;
 use Bunny\Client;
 use Bunny\Message as BunnyMessage;
+use CBOR\CBOREncoder;
+use Rinq\Request;
+use Rinq\Context;
 use Rinq\Revision;
 use Rinq\Ident\PeerId;
+use Rinq\Ident\MessageId;
 use Rinq\Internal\Command\Server as ServerInterface;
 
 /**
@@ -148,8 +152,9 @@ class Server implements ServerInterface
      */
     private function dispatch(BunnyMessage $message)
     {
-        // TODO: Parse as Ident\MessageId
-        $messageId = $message->getHeader('message-id');
+        $messageId = MessageId::createFromString(
+            $message->getHeader('message-id')
+        );
 
         if (null === $messageId) {
             $this->channel->nack($message, false, false); // don't requeue
@@ -211,46 +216,46 @@ class Server implements ServerInterface
         );
     }
 
-    // handle invokes the command handler for request.
+    /**
+     * handle invokes the command handler for request.
+     */
     private function handle(
-        string $messageId,
+        MessageId $messageId,
         BunnyMessage $message,
         string $namespace,
         string $command,
-        Revision $source,
+        $source, //TODO: fix this -> Revision $source,
         callable $handler
     ) {
-    //     ctx := amqputil.UnpackTrace(s.parentCtx, msg)
-    //     ctx, cancel := amqputil.UnpackDeadline(ctx, msg)
-    //     defer cancel()
-    //
-    //     req := rinq.Request{
-    //     Source:      source,
-    //     Namespace:   ns,
-    //     Command:     cmd,
-    //     Payload:     rinq.NewPayloadFromBytes(msg.Body),
-    //     IsMulticast: msg.Exchange == multicastExchange,
-    //     }
-    //
-    //     res, finalize := newResponse(
-    //     ctx,
-    //     s.channels,
-    //     msgID,
-    //     req,
-    //     unpackReplyMode(msg),
-    //     )
-    //
+        // TODO: this is mocked up - this is not how rinq-go does it.
+        $context = Context::create(0, $message->getHeader('correlation-id'));
+
+        $request = Request::create(
+            $source,
+            $namespace,
+            $command,
+            CBOREncoder::decode($message->content),
+            $message->exchange === Exchanges::multicastExchange
+        );
+
+        $response = new Response(
+            $context,
+            $this->channel,
+            $messageId,
+            $request,
+            $message->getHeader('reply-to')
+        );
+
+    // TODO
     //     if s.logger.IsDebug() {
     //     res = newDebugResponse(res)
     //     logRequestBegin(ctx, s.logger, s.peerID, msgID, req)
     //     }
     //
-        $handler('ctx', 'req', 'res');
+        $handler($context, $request, $response);
 
-        
-        var_dump($response);
     //
-    //     if finalize() {
+        // if (finalize() {
     //     _ = msg.Ack(false) // false = single message
     //
     //     if dr, ok := res.(*debugResponse); ok {

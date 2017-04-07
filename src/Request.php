@@ -16,8 +16,8 @@ final class Request
      * @param mixed    $payload     Payload contains optional application-defined information about the request.
      * @param bool     $IsMulticast True if the command request was (potentially) sent to more than one peer.
      */
-    public function create(
-        Revision $source,
+    public static function create(
+        $source, // TODO: fix this -> Revision $source,
         string $namespace,
         string $command,
         $payload,
@@ -81,7 +81,7 @@ final class Request
      * @param bool     $IsMulticast True if the command request was (potentially) sent to more than one peer.
      */
     private function __construct(
-        Revision $source,
+        $source, // TODO: fix this -> Revision $source,
         string $namespace,
         string $command,
         $payload,

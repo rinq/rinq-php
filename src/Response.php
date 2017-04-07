@@ -1,39 +1,63 @@
-// Response sends a reply to incoming command requests.
-type Response interface {
-	// IsRequired returns true if the sender is waiting for the response.
-	//
-	// If the response is not required, any payload data sent is discarded.
-	// The response must always be closed, even if IsRequired() returns false.
-	IsRequired() bool
+<?php
 
-	// IsClosed true if the response has already been closed.
-	IsClosed() bool
+declare(strict_types=1);  // @codeCoverageIgnore
 
-	// Done sends a payload to the source session and closes the response.
-	//
-	// A panic occurs if the response has already been closed.
-	Done(*Payload)
+namespace Rinq;
 
-	// Error sends an error to the source session and closes the response.
-	//
-	// A panic occurs if the response has already been closed.
-	Error(error)
+/**
+ * Response sends a reply to incoming command requests.
+ */
+interface Response
+{
+    /**
+     * If the response is not required, any payload data sent is discarded.
+     * The response must always be closed, even if IsRequired() returns false.
+     *
+     * @return bool True if the sender is waiting for the response.
+     */
+    public function isRequired(): bool;
 
-	// Fail is a convenience method that creates a Failure and passes it to
-	// Error() method. The created failure is returned.
-	//
-	// The failure type t is used verbatim. The failure message is formatted
-	// according to the format specifier f, interpolated with values from v.
-	//
-	// A panic occurs if the response has already been closed or if failureType
-	// is empty.
-	Fail(t, f string, v ...interface{}) Failure
+    /**
+     * IsClosed true If the response has already been closed.
+     */
+    public function isClosed(): bool;
 
-	// Close finalizes the response.
-	//
-	// If the origin session is expecting response it will receive a nil payload.
-	//
-	// It is not an error to close a responder multiple times. The return value
-	// is true the first time Close() is called, and false on subsequent calls.
-	Close() bool
+    /**
+     * Send a payload to the source session and closes the response.
+     *
+     * @param mixed $payload The body of the response.
+     *
+     * @throws BlahException If the response has already been closed.
+     */
+    public function done($payload): void;
+
+    /**
+     * Send an error to the source session and closes the response.
+     *
+     * @throws BlahException If the response has already been closed.
+     */
+    public function error($error): void;
+
+    /**
+     * A convenience method that creates a Failure and passes it to
+     * {@see $this->error()} method. The created failure is returned.
+     *
+     * The failure $type is used verbatim. The failure message is formatted
+     * according to the format specifier $message, interpolated with values from
+     * $vars.
+     *
+     * @throws BlahException If the response has already been closed or if failureType is empty.
+     */
+    public function fail(string $type, string $message, $vars): Failure;
+
+    /**
+     * Close finalizes the response.
+     *
+     * If the origin session is expecting response it will receive a null
+     * payload.
+     *
+     * It is not an error to close a responder multiple times. The return value
+     * is true the first time Close() is called, and false on subsequent calls.
+     */
+    public function close(): bool;
 }
