@@ -14,23 +14,23 @@ class ServerLogging
     {
         $this->logger = $logger;
     }
-/*
-    public function logServerInvalidMessageID(
-        PeerId $peerId,
-    msgID string,
-) {
+
+    public function logServerInvalidMessageID(PeerId $peerId, string $messageId)
+    {
         if(!$this->logger) {
             return;
         }
 
         $this->logger->debug(
             sprintf(
-    "%s server ignored AMQP message, '%s' is not a valid message ID",
-    $peerId->shortString(),
-    msgID,
-    )
-}
+                "%s server ignored AMQP message, '%s' is not a valid message ID",
+                $peerId->shortString(),
+                $messageId
+            )
+        );
+    }
 
+/*
     public function logIgnoredMessage(
         PeerId $peerId,
     msgID ident.MessageID,

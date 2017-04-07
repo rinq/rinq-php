@@ -5,6 +5,9 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
 use Bunny\Channel;
+use Bunny\Client;
+use Bunny\Message as BunnyMessage;
+use Rinq\Revision;
 use Rinq\Ident\PeerId;
 use Rinq\Internal\Command\Server as ServerInterface;
 
@@ -51,7 +54,9 @@ class Server implements ServerInterface
         $queue = $this->queues->get($this->channel, $namespace);
 
         $this->channel->consume(
-            $handler,
+            function(BunnyMessage $message, Channel $channel, Client $bunny) {
+                $this->dispatch($message);
+            },
             $queue,     // $queue
             $queue      // $consumerTag
         );
@@ -89,7 +94,7 @@ class Server implements ServerInterface
     }
 
     // Do we really need a handler? go acts differently so maybe.
-    public function initialize(callable $handler)
+    public function initialize()
     {
         $this->channel->qos(
             0,  // $prefetchSize = 0,
@@ -118,17 +123,16 @@ class Server implements ServerInterface
         );
 
         $this->channel->consume(
-            $handler,
+            function(BunnyMessage $message, Channel $channel, Client $bunny) {
+                $this->dispatch($message);
+            },
             $queue,
             $queue, // use queue name as consumer tag
             false,  // no local
             false,  // autoAck
             true    // exclusive
         );
-    }
 
-    public function run()
-    {
         $this->logger->logServerStart($this->peerId, 1);
     }
 
@@ -136,6 +140,136 @@ class Server implements ServerInterface
     {
         $this->logger->logServerStopping($this->peerId, 0);
         $this->logger->logServerStop($this->peerId);
+    }
+
+    /**
+     * Dispatch validates an incoming command request and dispatches it the
+     * appropriate handler.
+     */
+    private function dispatch(BunnyMessage $message)
+    {
+        // TODO: Parse as Ident\MessageId
+        $messageId = $message->getHeader('message-id');
+
+        if (null === $messageId) {
+            $this->channel->nack($message, false, false); // don't requeue
+            $this->logger->logServerInvalidMessageID($this->peerId, $messageId);
+            return;
+        }
+
+        $namespace = $message->getHeader(Message::namespaceHeader);
+        $command = $message->getHeader(Message::commandHeader);
+        if (null === $namespace) {
+            $this->channel->nack($message, false, false); // don't requeue
+            $this->logger->logIgnoredMessage(
+                $this->peerId,
+                $messageId,
+                'Namespace header is not a string.'
+            );
+
+            return;
+        }
+        if (null === $command) {
+            $this->channel->nack($message, false, false); // don't requeue
+            $this->logger->logIgnoredMessage(
+                $this->peerId,
+                $messageId,
+                'Command header is not a string.'
+            );
+
+            return;
+        }
+
+        if (!array_key_exists($namespace, $this->handlers)) {
+            $this->channel->nack(
+                $message,
+                false,
+                $message->exchange === Exchange::balancedExchange // requeue if "balanced"
+            );
+            $this->logger->logNoLongerListening($peerId, $messageId, $namespace);
+            return;
+        }
+
+        $handler = $this->handlers[$namespace];
+
+        // TODO:
+        // find the source session revision
+        // source, err := s.revisions.GetRevision(msgID.Ref)
+        // if err != nil {
+        // _ = msg.Reject(false) // false = don't requeue
+        // logIgnoredMessage(s.logger, s.peerID, msgID, err)
+        // return
+        // }
+        //
+        $this->handle(
+            $messageId,
+            $message,
+            $namespace,
+            $command,
+            null, // TODO: get $source,
+            $handler
+        );
+    }
+
+    // handle invokes the command handler for request.
+    private function handle(
+        string $messageId,
+        BunnyMessage $message,
+        string $namespace,
+        string $command,
+        Revision $source,
+        callable $handler
+    ) {
+    //     ctx := amqputil.UnpackTrace(s.parentCtx, msg)
+    //     ctx, cancel := amqputil.UnpackDeadline(ctx, msg)
+    //     defer cancel()
+    //
+    //     req := rinq.Request{
+    //     Source:      source,
+    //     Namespace:   ns,
+    //     Command:     cmd,
+    //     Payload:     rinq.NewPayloadFromBytes(msg.Body),
+    //     IsMulticast: msg.Exchange == multicastExchange,
+    //     }
+    //
+    //     res, finalize := newResponse(
+    //     ctx,
+    //     s.channels,
+    //     msgID,
+    //     req,
+    //     unpackReplyMode(msg),
+    //     )
+    //
+    //     if s.logger.IsDebug() {
+    //     res = newDebugResponse(res)
+    //     logRequestBegin(ctx, s.logger, s.peerID, msgID, req)
+    //     }
+    //
+        $handler('ctx', 'req', 'res');
+
+        
+        var_dump($response);
+    //
+    //     if finalize() {
+    //     _ = msg.Ack(false) // false = single message
+    //
+    //     if dr, ok := res.(*debugResponse); ok {
+    //     defer dr.Payload.Close()
+    //     logRequestEnd(ctx, s.logger, s.peerID, msgID, req, dr.Payload, dr.Err)
+    //     }
+    //     } else if msg.Exchange == balancedExchange {
+    //     select {
+    //     case <-ctx.Done():
+    //     _ = msg.Reject(false) // false = don't requeue
+    //     logRequestRejected(ctx, s.logger, s.peerID, msgID, req, ctx.Err().Error())
+    //     default:
+    //     _ = msg.Reject(true) // true = requeue
+    //     logRequestRequeued(ctx, s.logger, s.peerID, msgID, req)
+    //     }
+    //     } else {
+    //     _ = msg.Reject(false) // false = don't requeue
+    //     logRequestRejected(ctx, s.logger, s.peerID, msgID, req, ctx.Err().Error())
+    //     }
     }
 
     private $peerId;

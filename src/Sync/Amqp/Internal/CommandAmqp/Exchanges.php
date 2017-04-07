@@ -34,7 +34,7 @@ class Exchanges
     /**
      * Declare the exchanges.
      */
-    public function declareExchanges(Channel $channel)
+    public static function declareExchanges(Channel $channel)
     {
         $channel->exchangeDeclare(self::unicastExchange, 'direct');
         $channel->exchangeDeclare(self::multicastExchange, 'direct');

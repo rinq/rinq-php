@@ -6,8 +6,11 @@ namespace Rinq\Sync\Amqp;
 
 use Bunny\Client;
 use Bunny\Constants;
+use Bunny\Message;
+use Bunny\Channel;
 use Bunny\Exception\ClientException;
 use Rinq\Ident\PeerId;
+use Rinq\Sync\Amqp\Internal\CommandAmqp\Exchanges;
 use Rinq\Sync\Amqp\Internal\CommandAmqp\Invoker;
 use Rinq\Sync\Amqp\Internal\CommandAmqp\InvokerLogging;
 use Rinq\Sync\Amqp\Internal\CommandAmqp\Queues;
@@ -33,34 +36,32 @@ final class ConnectionFactory
     {
         $this->broker->connect();
 
-        $peerId = $this->establishIdentity();
-        $queues = new Queues();
         $channel = $this->broker->channel();
+        $peerId = $this->establishIdentity($channel);
+        $logger = $this->config->logger();
+
+        // TODO: should be in a diff factory?
+        $queues = new Queues();
+
+        // TODO: should be in a diff factory?
+        Exchanges::declareExchanges($channel);
 
         $invoker = new Invoker(
             $peerId,
             $queues,
             $channel,
-            new InvokerLogging($this->config->logger()),
+            new InvokerLogging($logger),
             $this->config->defaultTimeout()
         );
-
-        $invoker->initialize(function (Message $message, Channel $channel, Client $bunny) {
-            var_dump($message);
-        });
-        $invoker->run(); // TODO: run not done yet.
+        $invoker->initialize();
 
         $server = new Server(
             $peerId,
             $this->broker->channel(),
-            new ServerLogging($this->config->logger()),
+            new ServerLogging($logger),
             $queues
         );
-        $server->run(); // TODO: run not done yet.
-
-        $server->initialize(function (Message $message, Channel $channel, Client $bunny) {
-            var_dump($message);
-        });
+        $server->initialize();
 
         return Peer::create(
             $peerId,
@@ -71,27 +72,27 @@ final class ConnectionFactory
             $server,
         //     notifier,
         //     listener,
-            new Logging($this->config->logger())
+            new Logging($logger)
         );
     }
 
     /**
      * Allocate a new peer ID on the broker.
      */
-    private function establishIdentity(): PeerId
+    private function establishIdentity(Channel $channel): PeerId
     {
         while (true) {
             try {
                 $peerId = PeerId::create(time(), rand(1, 0xFFFF));
 
-                $this->broker->channel()->queueDeclare(
+                $channel->queueDeclare(
                     $peerId,    // queue
                     false,      // passive
                     false,      // durable
                     true        // exclusive
                 );
 
-                $this->config->logger()->info(
+                $this->config->logger()->debug(
                     sprintf(
                         '%s connected to \'%s\' as %s.',
                         $peerId->shortString(),
@@ -106,7 +107,7 @@ final class ConnectionFactory
                     throw $e;
                 }
 
-                $this->config->logger()->info(
+                $this->config->logger()->debug(
                     sprintf(
                         '%s already registered, retrying with a different peer ID',
                         $peerId

@@ -68,25 +68,22 @@ class Message
      */
     public const replyUncorrelated = 'u';
 
-    // public function packNamespaceAndCommand(
-    //     array &$headers,
-    //     string $namespace,
-    //     string $command
-    // ): void {
-    //     $headers[self::namespaceHeader] = $namespace;
-    //     $headers[self::commandHeader] = $command;
-    // }
+    public function packNamespaceAndCommand(
+        array &$headers,
+        string $namespace,
+        string $command
+    ): void {
+        $headers[self::namespaceHeader] = $namespace;
+        $headers[self::commandHeader] = $command;
+    }
 
-    /*
-     * @return array<string|null> Array of header values or null for each header that doesn't exist.
-     */
-    // public function unpackNamespaceAndCommand(array $headers): array
-    // {
-    //     return [
-    //         $this->unpack($headers, self::namespaceHeader),
-    //         $this->unpack($headers, self::commandHeader),
-    //     ];
-    // }
+    public function unpackNamespaceAndCommand(array $headers): array
+    {
+        return [
+            $this->unpack($headers, self::namespaceHeader),
+            $this->unpack($headers, self::commandHeader),
+        ];
+    }
 
     // public function packReplyMode(array &$headers, string $replyMode)
     // {

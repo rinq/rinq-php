@@ -61,6 +61,7 @@ final class Peer implements PeerInterface
      */
     public function session(): Session
     {
+        // TODO:
         // id := ident.SessionID{
         //     Peer: p.id,
         //     Seq:  atomic.AddUint32(&p.seq, 1),
@@ -101,12 +102,7 @@ final class Peer implements PeerInterface
      */
     public function listen(string $namespace, callable $handler): void
     {
-        $this->server->listen(
-            $namespace,
-            function (Message $message, Channel $channel, Client $bunny) use (&$handler) {
-                $handler($message, $channel, $bunny);
-            }
-        );
+        $this->server->listen($namespace, $handler);
 
         $this->logger->logStartedListening($this->peerId, $namespace);
     }
@@ -129,32 +125,9 @@ final class Peer implements PeerInterface
      * Handle command requests and notifications until {@see Peer::stop()} is
      * called.
      */
-    public function wait(): void
+    public function run(float $timeout): void
     {
-        // select {
-        // case <-p.remoteStore.Done():
-        // return nil, p.remoteStore.Err()
-        //
-        // case <-p.invoker.Done():
-        // return nil, p.invoker.Err()
-        //
-        // case <-p.server.Done():
-        // return nil, p.server.Err()
-        //
-        // case <-p.listener.Done():
-        // return nil, p.listener.Err()
-        //
-        // case <-p.sm.Graceful:
-        // return p.graceful, nil
-        //
-        // case <-p.sm.Forceful:
-        // return nil, nil
-        //
-        // case err := <-p.amqpClosed:
-        // return nil, err
-        // }
-
-        $this->broker->run();
+        $this->broker->run($timeout);
     }
 
     /**

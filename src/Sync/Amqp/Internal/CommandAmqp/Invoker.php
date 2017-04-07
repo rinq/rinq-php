@@ -70,6 +70,7 @@ class Invoker implements InvokerInterface
         $payload,
         string &$traceId
     ) {
+        // call bunny run for $timeout and wait for response
     }
 
     /**
@@ -125,11 +126,13 @@ class Invoker implements InvokerInterface
             $namespace,
             $payload,
             [
-                'correlation-id' => $messageId,
+                'message-id' => $messageId,
                 'x-max-priority' => 3,  // TODO: need proper priorities
                 Message::namespaceHeader => $namespace,
                 Message::commandHeader => $command,
                 'reply-to' => Message::replyNone,
+                // TODO: Missing delivery mode
+                // DeliveryMode: amqp.Persistent,
             ]
         );
 
@@ -157,9 +160,31 @@ class Invoker implements InvokerInterface
         $payload,
         string &$traceId
     ): void {
+        $this->send(
+            $context,
+            Exchanges::multicastExchange,
+            $namespace,
+            $payload,
+            [
+                'message-id' => $messageId,
+                'x-max-priority' => 3,  // TODO: need proper priorities
+                Message::namespaceHeader => $namespace,
+                Message::commandHeader => $command,
+                'reply-to' => Message::replyNone,
+            ]
+        );
+
+        $this->invokerLogger->logMulticaseExecute(
+            $this->peerId,
+            $messageId,
+            $namespace,
+            $command,
+            $context->traceId(),
+            $payload
+        );
     }
 
-    public function initialize($handler)
+    public function initialize()
     {
         $this->channel->qos(
             0,  // $prefetchSize = 0,
@@ -185,17 +210,16 @@ class Invoker implements InvokerInterface
         );
 
         $this->channel->consume(
-            $handler,
+            function(Message $message, Channel $channel, Bunny $bunny) {
+                // $this->consumemethod, // TODO handle response
+            },
             $queue,
             $queue, // use queue name as consumer tag
             false,  // no local
             false,  // autoAck
             true    // exclusive
         );
-    }
 
-    public function run()
-    {
         // synchronous invoker has a preFetch of 1
         $this->invokerLogger->logInvokerStart($this->peerId, 1);
     }

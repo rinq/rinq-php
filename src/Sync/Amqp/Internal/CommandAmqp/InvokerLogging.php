@@ -223,31 +223,32 @@ class InvokerLogging
             )
         );
     }
-/*
+
     public function logMulticastExecute(
-    PeerId $peerId,
-    MessageId $messageId,
-    string $namespace,
-    string $command,
-    string $traceId,
-    $payload,
-    err error,
-) {
+        PeerId $peerId,
+        MessageId $messageId,
+        string $namespace,
+        string $command,
+        string $traceId,
+        $payload
+    ) {
         if(!$this->logger) {
             return;
         }
 
         $this->logger->debug(
-    '%s invoker sent multicast '%s::%s' execution %s [%s] >>> %s',
-    peerID.ShortString(),
-    ns,
-    cmd,
-    msgID.ShortString(),
-    traceID,
-    payload,
-    )
-}
-*/
+            sprintf(
+                '%s invoker sent multicast \'%s::%s\' execution %s [%s] >>> %s',
+                $peerId->shortString(),
+                $namespace,
+                $command,
+                $messageId->shortString(),
+                $traceId,
+                $payload
+            )
+        );
+    }
+
     public function logInvokerStart(PeerId $peerId, int $preFetch)
     {
         if (!$this->logger) {
