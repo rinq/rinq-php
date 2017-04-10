@@ -8,6 +8,7 @@ use Bunny\Channel;
 use Bunny\Client;
 use Bunny\Message as BunnyMessage;
 use CBOR\CBOREncoder;
+use Rinq\Failure;
 use Rinq\Request;
 use Rinq\Context;
 use Rinq\Revision;
@@ -219,6 +220,7 @@ class Server implements ServerInterface
         $this->handle(
             $messageId,
             $message,
+            $channel,
             $namespace,
             $command,
             null, // TODO: get $source,
@@ -232,14 +234,14 @@ class Server implements ServerInterface
     private function handle(
         MessageId $messageId,
         BunnyMessage $message,
+        Channel $channel,
         string $namespace,
         string $command,
         $source, //TODO: fix this -> Revision $source,
         callable $handler
     ) {
-        var_dump($message);
         // TODO: this is mocked up - this is not how rinq-go does it.
-        $context = Context::create(0, $message->getHeader('correlation-id'));
+        $context = Context::create(0, $message->getHeader('message-id'));
 
         $request = Request::create(
             $source,
@@ -258,30 +260,39 @@ class Server implements ServerInterface
         );
 
         $this->logger->logRequestBegin($context, $this->peerId, $messageId, $request);
-        $handler($context, $request, $response);
-        $this->logger->logRequestEnd($context, $this->peerId, $messageId, $request, $response->payload);
 
-    // TODO
-        // if (finalize() {
-    //     _ = msg.Ack(false) // false = single message
-    //
-    //     if dr, ok := res.(*debugResponse); ok {
-    //     defer dr.Payload.Close()
-    //     logRequestEnd(ctx, s.logger, s.peerID, msgID, req, dr.Payload, dr.Err)
-    //     }
-    //     } else if msg.Exchange == balancedExchange {
-    //     select {
-    //     case <-ctx.Done():
-    //     _ = msg.Reject(false) // false = don't requeue
-    //     logRequestRejected(ctx, s.logger, s.peerID, msgID, req, ctx.Err().Error())
-    //     default:
-    //     _ = msg.Reject(true) // true = requeue
-    //     logRequestRequeued(ctx, s.logger, s.peerID, msgID, req)
-    //     }
-    //     } else {
-    //     _ = msg.Reject(false) // false = don't requeue
-    //     logRequestRejected(ctx, s.logger, s.peerID, msgID, req, ctx.Err().Error())
-    //     }
+        try {
+            $handler($context, $request, $response);
+            // TODO: We need some kinda of timeout check.
+            $channel->ack($message);
+            $this->logger->logRequestEnd($context, $this->peerId, $messageId, $request, $response->payload);
+        } catch (\Exception $e) {
+            $channel->nack($message);
+            $this->logger->logRequestEnd($context, $this->peerId, $messageId, $request, $response->payload, $e->getMessage());
+
+            throw $e;
+        }
+        // TODO
+            // if (finalize() {
+        //     _ = msg.Ack(false) // false = single message
+        //
+        //     if dr, ok := res.(*debugResponse); ok {
+        //     defer dr.Payload.Close()
+        //     logRequestEnd(ctx, s.logger, s.peerID, msgID, req, dr.Payload, dr.Err)
+        //     }
+        //     } else if msg.Exchange == balancedExchange {
+        //     select {
+        //     case <-ctx.Done():
+        //     _ = msg.Reject(false) // false = don't requeue
+        //     logRequestRejected(ctx, s.logger, s.peerID, msgID, req, ctx.Err().Error())
+        //     default:
+        //     _ = msg.Reject(true) // true = requeue
+        //     logRequestRequeued(ctx, s.logger, s.peerID, msgID, req)
+        //     }
+        //     } else {
+        //     _ = msg.Reject(false) // false = don't requeue
+        //     logRequestRejected(ctx, s.logger, s.peerID, msgID, req, ctx.Err().Error())
+        //     }
     }
 
     private $peerId;
