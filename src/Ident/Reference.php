@@ -51,6 +51,15 @@ class Reference
         );
     }
 
+    public function shortString(): string
+    {
+        return sprintf(
+            '%s@%d',
+            $this->sessionId->shortString(),
+            $this->revision
+        );
+    }
+
     public function __toString()
     {
         return sprintf('%s@%d', $this->sessionId, $this->revision);

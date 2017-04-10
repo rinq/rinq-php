@@ -9,16 +9,13 @@ use Rinq\Ident\PeerId;
 
 class Logging
 {
-    public function __construct(LoggerInterface $logger = null)
+    public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
 
-    public function logStartedListening(
-        PeerId $peerId,
-        string $namespace
-    ) {
-        $this->logger->debug(
+    public function logStartedListening( PeerId $peerId, string $namespace ) {
+        $this->logger->info(
             sprintf(
                 '%s started listening for command requests in \'%s\' namespace',
                 $peerId->shortString(),
@@ -27,11 +24,8 @@ class Logging
         );
     }
 
-    public function logStoppedListening(
-        PeerId $peerId,
-        string $namespace
-    ) {
-        $this->logger->debug(
+    public function logStoppedListening( PeerId $peerId, string $namespace ) {
+        $this->logger->info(
             sprintf(
                 '%s stopped listening for command requests in \'%s\' namespace',
                 $peerId->shortString(),

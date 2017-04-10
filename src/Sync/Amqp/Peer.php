@@ -7,6 +7,7 @@ namespace Rinq\Sync\Amqp;
 use Bunny\Channel;
 use Bunny\Client;
 use Bunny\Message;
+use Bunny\Exception\ClientException;
 use Rinq\Ident\PeerId;
 use Rinq\Internal\Command\Invoker;
 use Rinq\Internal\Command\Server;
@@ -127,7 +128,23 @@ final class Peer implements PeerInterface
      */
     public function run(float $timeout): void
     {
-        $this->broker->run($timeout);
+        $this->isRunning = true;
+
+        do {
+            try {
+                // TODO: time run() and subtract from $timeout
+                $this->broker->run($timeout);
+            } catch (ClientException $e) {
+                $error = error_get_last();
+                if (stripos($error['message'], 'Interrupted system call') === false) {
+                    throw $e;
+                }
+
+                if (function_exists('pcntl_signal_dispatch')) {
+                    pcntl_signal_dispatch();
+                }
+            }
+        } while ($this->isRunning);
     }
 
     /**
@@ -139,56 +156,12 @@ final class Peer implements PeerInterface
      */
     public function stop(): void
     {
-        // p.server.GracefulStop()
-        // p.invoker.GracefulStop()
-        // p.remoteStore.GracefulStop()
-        // p.listener.GracefulStop()
-        //
-        // done := syncutil.Group(
-        // p.remoteStore.Done(),
-        // p.invoker.Done(),
-        // p.server.Done(),
-        // p.listener.Done(),
-        // )
-        //
-        // select {
-        // case <-done:
-        // return nil, nil
-        //
-        // case <-p.sm.Forceful:
-        // return nil, nil
-        //
-        // case err := <-p.amqpClosed:
-        // return nil, err
-        // }
-    }
+        $this->isRunning = false;
 
-    // func (p *peer) finalize(err error) error {
-    //     p.server.Stop()
-    //     p.invoker.Stop()
-    //     p.remoteStore.Stop()
-    //     p.listener.Stop()
-    //
-    //     p.localStore.Each(func(sess rinq.Session, _ localsession.Catalog) {
-    //     sess.Destroy()
-    //     })
-    //
-    //     <-syncutil.Group(
-    //     p.remoteStore.Done(),
-    //     p.invoker.Done(),
-    //     p.server.Done(),
-    //     p.listener.Done(),
-    //     )
-    //
-    //     closeErr := p.broker.Close()
-    //
-    //     // only return the close err if there's no causal error.
-    //     if err == nil {
-    //     return closeErr
-    //     }
-    //
-    //     return err
-    // }
+        $this->server->stop();
+        $this->invoker->stop();
+        $this->broker->stop();
+    }
 
     public function __construct(
         PeerId $peerId,

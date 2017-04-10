@@ -5,6 +5,7 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
 use Bunny\Channel;
+use Bunny\Client;
 use CBOR\CBOREncoder;
 use Rinq\Context;
 use Rinq\Ident\MessageId;
@@ -24,16 +25,20 @@ class Invoker implements InvokerInterface
     public function __construct(
         PeerId $peerId,
         Queues $queues,
-        Channel $channel,
+        Client $broker,
         InvokerLogging $invokerLogger,
         float $defaultTimeout // last becuase the async version is followed by preFetch
 )
     {
         $this->peerId = $peerId;
         $this->queues = $queues;
-        $this->channel = $channel;
+        $this->broker = $broker;
         $this->invokerLogger = $invokerLogger;
         $this->defaultTimeout = $defaultTimeout;
+
+        $this->publishChannel = $broker->channel();
+        $this->consumeChannel = $broker->channel();
+        $this->handlers = [];
     }
     /**
      * Sends a unicast command request to a specific peer and blocks until a
@@ -186,7 +191,7 @@ class Invoker implements InvokerInterface
 
     public function initialize()
     {
-        $this->channel->qos(
+        $this->consumeChannel->qos(
             0,  // $prefetchSize = 0,
             1   // $prefetchCount = 0
         );
@@ -196,21 +201,22 @@ class Invoker implements InvokerInterface
 
         $queue = $this->queues->responseQueue($this->peerId);
 
-        $this->channel->queueDeclare(
+        $this->consumeChannel->queueDeclare(
             $queue,
             false,  // passive
             false,  // durable
             true    // exclusive
         );
 
-        $this->channel->queueBind(
+        $this->consumeChannel->queueBind(
             $queue,
             Exchanges::responseExchange,
             $this->peerId . '.*'
         );
 
-        $this->channel->consume(
+        $this->consumeChannel->consume(
             function(Message $message, Channel $channel, Bunny $bunny) {
+                $this->isWaiting = false;
                 // $this->consumemethod, // TODO handle response
             },
             $queue,
@@ -251,7 +257,11 @@ class Invoker implements InvokerInterface
             $queue = $this->queues->get($channel, $key);
         }
 
-        $this->channel->publish(
+        if (null === $this->publishChannel) {
+            throw new ChannelClosedException();
+        }
+
+        $this->publishChannel->publish(
             CBOREncoder::encode($payload),  // message
             $headers,                       // headers
             $exchange,                      // exchange
@@ -259,10 +269,35 @@ class Invoker implements InvokerInterface
         );
     }
 
+    private function call(/*...*/) {
+        $this->isWaiting = true;
+
+        do {
+            $bunny->run($timeout);
+        } while ($this->isWaiting);
+
+        if (!$response) {
+            // timeed out
+        }
+
+        if ($this->publishChannel === null) {
+            $this->consumeChannel->close();
+        }
+    }
+
+    public function stop()
+    {
+        $this->publishChannel = null; // no more publishing for us.
+    }
+
     private $peerId;
     private $queues;
-    private $channel;
+    private $broker;
     private $invokerLogger;
     private $defaultTimeout;
-    private $handlers = [];
+
+    private $publishChannel;
+    private $consumeChannel;
+    private $handlers;
+    private $isWaiting;
 }

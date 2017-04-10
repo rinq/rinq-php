@@ -10,7 +10,7 @@ use Rinq\Ident\PeerId;
 
 class InvokerLogging
 {
-    public function __construct(LoggerInterface $logger = null)
+    public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
@@ -19,10 +19,6 @@ class InvokerLogging
         PeerId $peerId,
         string $messageId
     ) {
-        if(!$this->logger) {
-            return;
-        }
-
         $this->logger->debug(
             sprintf(
                 '%s invoker ignored AMQP message, \'%s\' is not a valid message ID.',
@@ -37,10 +33,6 @@ class InvokerLogging
         MessageId $messageId,
         err error,
     ) {
-        if(!$this->logger) {
-            return;
-        }
-
         $this->logger->debug(
     '%s invoker ignored AMQP message %s, %s',
     peerID.ShortString(),
@@ -58,10 +50,6 @@ class InvokerLogging
     string $traceId,
     $payload,
 ) {
-        if(!$this->logger) {
-            return;
-        }
-
         $this->logger->debug(
     '%s invoker began unicast '%s::%s' call %s to %s [%s] >>> %s',
     peerID.ShortString(),
@@ -82,10 +70,6 @@ class InvokerLogging
     string $traceId,
     $payload,
 ) {
-        if(!$this->logger) {
-            return;
-        }
-
         $this->logger->debug(
     '%s invoker began '%s::%s' call %s [%s] >>> %s',
     peerID.ShortString(),
@@ -106,10 +90,6 @@ class InvokerLogging
     $payload,
     err error,
 ) {
-        if(!$this->logger) {
-            return;
-        }
-
     switch e := err.(type) {
     case nil:
         $this->logger->debug(
@@ -160,10 +140,6 @@ class InvokerLogging
     $payload,
     err error,
 ) {
-        if(!$this->logger) {
-            return;
-        }
-
         $this->logger->debug(
     '%s invoker sent asynchronous '%s::%s' call request %s [%s] >>> %s',
     peerID.ShortString(),
@@ -184,10 +160,6 @@ class InvokerLogging
     $payload,
     err error,
 ) {
-        if(!$this->logger) {
-            return;
-        }
-
         $this->logger->debug(
     '%s invoker received asynchronous '%s::%s' call response %s [%s] >>> %s',
     peerID.ShortString(),
@@ -232,10 +204,6 @@ class InvokerLogging
         string $traceId,
         $payload
     ) {
-        if(!$this->logger) {
-            return;
-        }
-
         $this->logger->debug(
             sprintf(
                 '%s invoker sent multicast \'%s::%s\' execution %s [%s] >>> %s',
@@ -268,10 +236,6 @@ class InvokerLogging
     PeerId $peerId,
     pending int,
 ) {
-        if(!$this->logger) {
-            return;
-        }
-
         $this->logger->debug(
     '%s invoker stopping gracefully (pending: %d)',
     peerID.ShortString(),
@@ -283,10 +247,6 @@ class InvokerLogging
     PeerId $peerId,
     err error,
 ) {
-        if(!$this->logger) {
-            return;
-        }
-
     if err == nil {
         $this->logger->debug(
     '%s invoker stopped',

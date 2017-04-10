@@ -63,14 +63,14 @@ class PeerId
         return self::create(hexdec($parts[0]), hexdec($parts[1]));
     }
 
-    public function __toString()
-    {
-        return sprintf('%X-%04X', $this->clock, $this->rand);
-    }
-
     public function shortString(): string
     {
         return sprintf('%04X', $this->rand);
+    }
+
+    public function __toString()
+    {
+        return sprintf('%X-%04X', $this->clock, $this->rand);
     }
 
     /**

@@ -17,6 +17,8 @@ use Rinq\Response as ResponseInterface;
  */
 class Response implements ResponseInterface
 {
+    public $payload;
+
     public function __construct(
         Context $context,
         Channel $channel,
@@ -150,7 +152,7 @@ class Response implements ResponseInterface
     private function respond(array $headers, $payload)
     {
         $this->isClosed = true;
-        $headers = [];
+        $this->payload = $payload;
 
         if ($this->replyMode === Message::replyNone) {
             return;
@@ -181,7 +183,7 @@ class Response implements ResponseInterface
         }
 
         $this->channel->publish(
-            CBOREncoder::encode($payload),
+            CBOREncoder::encode($this->payload),
             $headers,
             Exchanges::responseExchange,
             $this->messageId

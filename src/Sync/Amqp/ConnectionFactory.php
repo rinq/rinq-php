@@ -36,20 +36,17 @@ final class ConnectionFactory
     {
         $this->broker->connect();
 
-        $channel = $this->broker->channel();
+        $channel = $this->broker->channel(); // publishing channel
         $peerId = $this->establishIdentity($channel);
         $logger = $this->config->logger();
 
-        // TODO: should be in a diff factory?
         $queues = new Queues();
-
-        // TODO: should be in a diff factory?
         Exchanges::declareExchanges($channel);
 
         $invoker = new Invoker(
             $peerId,
             $queues,
-            $channel,
+            $this->broker,
             new InvokerLogging($logger),
             $this->config->defaultTimeout()
         );
@@ -57,7 +54,7 @@ final class ConnectionFactory
 
         $server = new Server(
             $peerId,
-            $this->broker->channel(),
+            $this->broker,
             new ServerLogging($logger),
             $queues
         );
@@ -66,12 +63,12 @@ final class ConnectionFactory
         return Peer::create(
             $peerId,
             $this->broker,
-        //     localStore,
-        //     remoteStore,
+            // localStore,
+            // remoteStore,
             $invoker,
             $server,
-        //     notifier,
-        //     listener,
+            // notifier,
+            // listener,
             new Logging($logger)
         );
     }

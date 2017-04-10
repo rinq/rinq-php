@@ -47,6 +47,15 @@ class MessageId
         );
     }
 
+    public function shortString(): string
+    {
+        return sprintf(
+            '%s#%d',
+            $this->reference->shortString(),
+            $this->sequence
+        );
+    }
+
     public function __toString()
     {
         return sprintf('%s#%d', $this->reference, $this->sequence);

@@ -22,14 +22,17 @@ class Server implements ServerInterface
 {
     public function __construct(
         PeerId $peerId,
-        Channel $channel,
+        Client $broker,
         ServerLogging $logger,
         Queues $queues
     ) {
         $this->peerId = $peerId;
-        $this->channel = $channel;
+        $this->broker = $broker;
         $this->logger = $logger;
         $this->queues = $queues;
+
+        $this->publishChannel = $broker->channel();
+        $this->consumeChannel = $broker->channel();
         $this->handlers = [];
     }
 
@@ -49,17 +52,17 @@ class Server implements ServerInterface
             return false;
         }
 
-        $this->channel->queueBind(
+        $this->consumeChannel->queueBind(
             $this->queues->requestQueue($this->peerId), // $queue = ''
             Exchanges::multicastExchange,               // $exchange
             $namespace                                  // $routingKey = ''
         );
 
-        $queue = $this->queues->get($this->channel, $namespace);
+        $queue = $this->queues->get($this->consumeChannel, $namespace);
 
-        $this->channel->consume(
+        $this->consumeChannel->consume(
             function(BunnyMessage $message, Channel $channel, Client $bunny) {
-                $this->dispatch($message);
+                $this->dispatch($message, $channel);
             },
             $queue,     // $queue
             $queue      // $consumerTag
@@ -83,14 +86,14 @@ class Server implements ServerInterface
             return false;
         }
 
-        $this->channel->queueUnbind(
+        $this->consumeChannel->queueUnbind(
             $this->queues->requestQueue($this->peerId), // $queue = ''
             Exchanges::multicastExchange,               // $exchange,
             $namespace                                  // $routingKey = ''
         );
 
         // balanced queue
-        $this->channel->cancel($this->queues->balancedRequestQueue($namespace));
+        $this->consumeChannel->cancel($this->queues->balancedRequestQueue($namespace));
 
         unset($this->handlers[$namespace]);
 
@@ -100,17 +103,17 @@ class Server implements ServerInterface
     // Do we really need a handler? go acts differently so maybe.
     public function initialize()
     {
-        $this->channel->qos(
+        $this->consumeChannel->qos(
             0,  // $prefetchSize = 0,
             1   // $prefetchCount = 0
         );
 
         // TODO:
-        // s.channel.NotifyClose(s.amqpClosed)
+        // s.consumeChannel.NotifyClose(s.amqpClosed)
 
         $queue = $this->queues->requestQueue($this->peerId);
 
-        $this->channel->queueDeclare(
+        $this->consumeChannel->queueDeclare(
             $queue,
             false,  // passive
             false,  // durable
@@ -120,15 +123,15 @@ class Server implements ServerInterface
             ['x-max-priority' => 3] // TODO: need proper priorities
         );
 
-        $this->channel->queueBind(
+        $this->consumeChannel->queueBind(
             $queue,
             Exchanges::unicastExchange,
             $this->peerId
         );
 
-        $this->channel->consume(
+        $this->consumeChannel->consume(
             function(BunnyMessage $message, Channel $channel, Client $bunny) {
-                $this->dispatch($message);
+                $this->dispatch($message, $channel);
             },
             $queue,
             $queue, // use queue name as consumer tag
@@ -143,6 +146,13 @@ class Server implements ServerInterface
     public function stop()
     {
         $this->logger->logServerStopping($this->peerId, 0);
+
+        foreach ($this->handlers as $namespace => $handler) {
+            $this->unlisten($namespace);
+        }
+
+        $this->consumeChannel->close();
+
         $this->logger->logServerStop($this->peerId);
     }
 
@@ -150,14 +160,14 @@ class Server implements ServerInterface
      * Dispatch validates an incoming command request and dispatches it the
      * appropriate handler.
      */
-    private function dispatch(BunnyMessage $message)
+    private function dispatch(BunnyMessage $message, Channel $channel)
     {
         $messageId = MessageId::createFromString(
             $message->getHeader('message-id')
         );
 
         if (null === $messageId) {
-            $this->channel->nack($message, false, false); // don't requeue
+            $channel->nack($message, false, false); // don't requeue
             $this->logger->logServerInvalidMessageID($this->peerId, $messageId);
             return;
         }
@@ -165,7 +175,7 @@ class Server implements ServerInterface
         $namespace = $message->getHeader(Message::namespaceHeader);
         $command = $message->getHeader(Message::commandHeader);
         if (null === $namespace) {
-            $this->channel->nack($message, false, false); // don't requeue
+            $channel->nack($message, false, false); // don't requeue
             $this->logger->logIgnoredMessage(
                 $this->peerId,
                 $messageId,
@@ -175,7 +185,7 @@ class Server implements ServerInterface
             return;
         }
         if (null === $command) {
-            $this->channel->nack($message, false, false); // don't requeue
+            $channel->nack($message, false, false); // don't requeue
             $this->logger->logIgnoredMessage(
                 $this->peerId,
                 $messageId,
@@ -186,7 +196,7 @@ class Server implements ServerInterface
         }
 
         if (!array_key_exists($namespace, $this->handlers)) {
-            $this->channel->nack(
+            $channel->nack(
                 $message,
                 false,
                 $message->exchange === Exchange::balancedExchange // requeue if "balanced"
@@ -227,6 +237,7 @@ class Server implements ServerInterface
         $source, //TODO: fix this -> Revision $source,
         callable $handler
     ) {
+        var_dump($message);
         // TODO: this is mocked up - this is not how rinq-go does it.
         $context = Context::create(0, $message->getHeader('correlation-id'));
 
@@ -240,21 +251,17 @@ class Server implements ServerInterface
 
         $response = new Response(
             $context,
-            $this->channel,
+            $this->publishChannel,
             $messageId,
             $request,
             $message->getHeader('reply-to')
         );
 
-    // TODO
-    //     if s.logger.IsDebug() {
-    //     res = newDebugResponse(res)
-    //     logRequestBegin(ctx, s.logger, s.peerID, msgID, req)
-    //     }
-    //
+        $this->logger->logRequestBegin($context, $this->peerId, $messageId, $request);
         $handler($context, $request, $response);
+        $this->logger->logRequestEnd($context, $this->peerId, $messageId, $request, $response->payload);
 
-    //
+    // TODO
         // if (finalize() {
     //     _ = msg.Ack(false) // false = single message
     //
@@ -278,7 +285,11 @@ class Server implements ServerInterface
     }
 
     private $peerId;
-    private $channel;
+    private $broker;
     private $logger;
+    private $queues;
+
+    private $publishChannel;
+    private $consumeChannel;
     private $handlers;
 }

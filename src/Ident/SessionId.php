@@ -58,6 +58,11 @@ class SessionId
         );
     }
 
+    public function shortString()
+    {
+        return sprintf('%s.%d', $this->peerId->shortString(), $this->sequence);
+    }
+
     public function __toString()
     {
         return sprintf('%s.%d', $this->peerId, $this->sequence);
