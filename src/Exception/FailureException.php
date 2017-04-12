@@ -2,7 +2,8 @@
 
 declare(strict_types=1); // @codeCoverageIgnore
 
-namespace Rinq;
+namespace Rinq\Exception;
+
 use RuntimeException;
 
 /**
@@ -15,16 +16,16 @@ use RuntimeException;
  * Failures can be produced by a command handler by calling Response.Fail() or
  * passing a Failure value to Response.Error().
  */
-final class Failure
+final class FailureException extends RuntimeException
 {
     /**
      * @param string      $type    The type of failure.
      * @param string|null $message Optional human-readable description of the failure.
      * @param mixed       $payload Optional application-defined payload.
      */
-    public function create(string $type, string $message = null, $payload = null)
+    public static function create(string $type, string $message = null, $payload = null)
     {
-        return self($type, $message, $payload);
+        return new self($type, $message, $payload);
     }
 
     /**
@@ -35,14 +36,6 @@ final class Failure
     public function type(): string
     {
         return $this->type;
-    }
-
-    /**
-     * Message is an optional human-readable description of the failure.
-     */
-    public function message(): string
-    {
-        return $this->message;
     }
 
     /**
@@ -62,18 +55,22 @@ final class Failure
      *
      * @throws RuntimeException If the failure type is empty.
      */
-    public function __construct(string $type, string $message, $payload)
+    public function __construct(string $type, string $message = null, $payload = null)
     {
         if ($type === '') {
             throw new RuntimeException('Failure type is empty.');
         }
 
+        if (null === $message) {
+            $message = 'Unknown failure.';
+        }
+
+        parent::__construct($message);
+
         $this->type = $type;
-        $this->message = $message;
         $this->payload = $payload;
     }
 
     private $type;
-    private $message;
     private $payload;
 }

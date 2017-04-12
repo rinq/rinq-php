@@ -4,10 +4,11 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
+use Throwable;
 use Bunny\Channel;
 use CBOR\CBOREncoder;
 use Rinq\Context;
-use Rinq\Failure;
+use Rinq\Exception\FailureException;
 use Rinq\Ident\MessageId;
 use Rinq\Request;
 use Rinq\Response as ResponseInterface;
@@ -86,7 +87,7 @@ class Response implements ResponseInterface
      *
      * @throws BlahException If the response has already been closed.
      */
-    public function error($error): void
+    public function error(Throwable $error): void
     {
         if ($this->isClosed()) {
             // TODO: create exception for this.
@@ -95,7 +96,16 @@ class Response implements ResponseInterface
 
         $headers = [];
         Message::packErrorResponse($headers, $error);
-        $this->respond($headers, $error);
+
+        $payload = null;
+        if ($error instanceof FailureException) {
+            if (null !== $error->payload()) {
+                $payload = $error->payload();
+            }
+        } else {
+            $payload = $error->getMessage();
+        }
+        $this->respond($headers, $payload);
     }
 
     /**
@@ -106,11 +116,11 @@ class Response implements ResponseInterface
      * according to the format specifier $message, interpolated with values from
      * $vars.
      *
-     * @throws BlahException If the response has already been closed or if failureType is empty.
+     * @throws BlahException If the response has already been closed or if $type is empty.
      */
-    public function fail(string $type, string $message, $vars): Failure
+    public function fail(string $type, string $message, array $vars): FailureException
     {
-        $error = Failure::create($type, sprintf($message, ...$vars));
+        $error = FailureException::create($type, sprintf($message, ...$vars));
         $this->error($error);
 
         return $error;
@@ -149,7 +159,7 @@ class Response implements ResponseInterface
         return false;
     }
 
-    private function respond(array $headers, $payload)
+    private function respond(array $headers, $payload): void
     {
         $this->isClosed = true;
         $this->payload = $payload;
@@ -174,7 +184,7 @@ class Response implements ResponseInterface
         // amqputil.PackTrace(r.context, msg)
         //
         if ($this->replyMode === Message::replyUncorrelated) {
-            $this->mesage->packNamespaceAndCommand(
+            Message::packNamespaceAndCommand(
                 $headers,
                 $this->request->namespace(),
                 $this->request->command()

@@ -4,6 +4,7 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
+use Throwable;
 use Bunny\Channel;
 use Bunny\Client;
 use Bunny\Message as BunnyMessage;
@@ -168,7 +169,7 @@ class Server implements ServerInterface
         );
 
         if (null === $messageId) {
-            $channel->nack($message, false, false); // don't requeue
+            $channel->reject($message, false); // don't requeue
             $this->logger->logServerInvalidMessageID($this->peerId, $messageId);
             return;
         }
@@ -176,7 +177,7 @@ class Server implements ServerInterface
         $namespace = $message->getHeader(Message::namespaceHeader);
         $command = $message->getHeader(Message::commandHeader);
         if (null === $namespace) {
-            $channel->nack($message, false, false); // don't requeue
+            $channel->reject($message, false); // don't requeue
             $this->logger->logIgnoredMessage(
                 $this->peerId,
                 $messageId,
@@ -186,7 +187,7 @@ class Server implements ServerInterface
             return;
         }
         if (null === $command) {
-            $channel->nack($message, false, false); // don't requeue
+            $channel->reject($message, false); // don't requeue
             $this->logger->logIgnoredMessage(
                 $this->peerId,
                 $messageId,
@@ -197,9 +198,8 @@ class Server implements ServerInterface
         }
 
         if (!array_key_exists($namespace, $this->handlers)) {
-            $channel->nack(
+            $channel->reject(
                 $message,
-                false,
                 $message->exchange === Exchange::balancedExchange // requeue if "balanced"
             );
             $this->logger->logNoLongerListening($peerId, $messageId, $namespace);
@@ -240,8 +240,19 @@ class Server implements ServerInterface
         $source, //TODO: fix this -> Revision $source,
         callable $handler
     ) {
-        // TODO: this is mocked up - this is not how rinq-go does it.
-        $context = Context::create(0, $message->getHeader('message-id'));
+        // TODO: make into a helper function
+        $dl = $message->getHeader('dl');
+        if (null === $dl) {
+            $timeout = INF;
+            $dl = INF;
+        } else {
+            $timeout = microtime(true) - ($dl / 1000);
+        }
+
+        $context = Context::create(
+            $timeout,
+            $message->getHeader('correlation-id') ?: $message->getHeader('message-id')
+        );
 
         $request = Request::create(
             $source,
@@ -263,36 +274,50 @@ class Server implements ServerInterface
 
         try {
             $handler($context, $request, $response);
-            // TODO: We need some kinda of timeout check.
-            $channel->ack($message);
-            $this->logger->logRequestEnd($context, $this->peerId, $messageId, $request, $response->payload);
-        } catch (\Exception $e) {
-            $channel->nack($message);
-            $this->logger->logRequestEnd($context, $this->peerId, $messageId, $request, $response->payload, $e->getMessage());
+        } catch (Throwable $e) {
+            $channel->reject($message, true);   // requeue
 
             throw $e;
         }
-        // TODO
-            // if (finalize() {
-        //     _ = msg.Ack(false) // false = single message
-        //
-        //     if dr, ok := res.(*debugResponse); ok {
-        //     defer dr.Payload.Close()
-        //     logRequestEnd(ctx, s.logger, s.peerID, msgID, req, dr.Payload, dr.Err)
-        //     }
-        //     } else if msg.Exchange == balancedExchange {
-        //     select {
-        //     case <-ctx.Done():
-        //     _ = msg.Reject(false) // false = don't requeue
-        //     logRequestRejected(ctx, s.logger, s.peerID, msgID, req, ctx.Err().Error())
-        //     default:
-        //     _ = msg.Reject(true) // true = requeue
-        //     logRequestRequeued(ctx, s.logger, s.peerID, msgID, req)
-        //     }
-        //     } else {
-        //     _ = msg.Reject(false) // false = don't requeue
-        //     logRequestRejected(ctx, s.logger, s.peerID, msgID, req, ctx.Err().Error())
-        //     }
+
+        if ($response->isClosed()) {
+            $channel->ack($message);
+            $this->logger->logRequestEnd(
+                $context,
+                $this->peerId,
+                $messageId,
+                $request,
+                $response->payload
+            );
+        } else if ($message->exchange === Exchanges::balancedExchange) {
+            if (microtime(true) > $dl) {
+                $channel->reject($message, false);  // don't requeue
+                $this->logger->logRequestRejected(
+                    $context,
+                    $this->peerId,
+                    $messageId,
+                    $request,
+                    'Deadline exceeded.'
+                );
+            } else {
+                $channel->reject($message, true);   // requeue
+                $this->logger->logRequestRequeued(
+                    $context,
+                    $this->peerId,
+                    $messageId,
+                    $request
+                );
+            }
+        } else {
+            $channel->reject($message, false);  // don't requeue
+            $this->logger->logRequestRejected(
+                $context,
+                $this->peerId,
+                $messageId,
+                $request,
+                'Response not closed.'
+            );
+        }
     }
 
     private $peerId;

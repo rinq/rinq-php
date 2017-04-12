@@ -4,6 +4,9 @@ declare(strict_types=1);  // @codeCoverageIgnore
 
 namespace Rinq;
 
+use Throwable;
+use Rinq\Exception\FailureException;
+
 /**
  * Response sends a reply to incoming command requests.
  */
@@ -36,7 +39,7 @@ interface Response
      *
      * @throws BlahException If the response has already been closed.
      */
-    public function error($error): void;
+    public function error(Throwable $error): void;
 
     /**
      * A convenience method that creates a Failure and passes it to
@@ -48,7 +51,7 @@ interface Response
      *
      * @throws BlahException If the response has already been closed or if failureType is empty.
      */
-    public function fail(string $type, string $message, $vars): Failure;
+    public function fail(string $type, string $message, array $vars): FailureException;
 
     /**
      * Close finalizes the response.

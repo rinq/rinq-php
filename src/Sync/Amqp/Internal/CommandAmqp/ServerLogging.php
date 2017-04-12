@@ -134,44 +134,46 @@ class ServerLogging
     $messageId->shortString(),
     )
 }
-
+*/
     public function logRequestRequeued(
         Context $context,
         PeerId $peerId,
         MessageId $messageId,
-        Request $request,
-) {
+        Request $request
+    ) {
 
         $this->logger->debug(
             sprintf(
-    "%s did not write a response for '%s::%s' command request, request %s has been re-queued [%s]",
-    $peerId->shortString(),
-    $request->namespace(),
-    $request->command(),
-    $messageId->shortString(),
-    $context->traceId()
-    )
-}
+                '%s did not write a response for \'%s::%s\' command request, request %s has been re-queued [%s]',
+                $peerId->shortString(),
+                $request->namespace(),
+                $request->command(),
+                $messageId->shortString(),
+                $context->traceId()
+            )
+        );
+    }
 
     public function logRequestRejected(
         Context $context,
         PeerId $peerId,
         MessageId $messageId,
         Request $request,
-    reason string,
-) {
+        string $reason
+    ) {
         $this->logger->info(
             sprintf(
-    "%s did not write a response for '%s::%s' command request %s, request has been abandoned (%s) [%s]",
-    $peerId->shortString(),
-    $request->namespace(),
-    $request->command(),
-    $messageId->shortString(),
-    reason,
-    $context->traceId()
-    )
-}
-*/
+                '%s did not write a response for \'%s::%s\' command request %s, request has been abandoned (%s) [%s]',
+                $peerId->shortString(),
+                $request->namespace(),
+                $request->command(),
+                $messageId->shortString(),
+                $reason,
+                $context->traceId()
+            )
+        );
+    }
+
     public function logServerStart(PeerId $peerId, int $preFetch)
     {
         $this->logger->debug(

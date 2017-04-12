@@ -3,7 +3,11 @@
 declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
-use Rinq\Failure;
+
+use Throwable;
+use Bunny\Message as BunnyMessage;
+use CBOR\CBOREncoder;
+use Rinq\Exception\FailureException;
 
 class Message
 {
@@ -78,66 +82,62 @@ class Message
         $headers[self::commandHeader] = $command;
     }
 
-    public static function unpackNamespaceAndCommand(array $headers): array
-    {
-        return [
-            $this->unpack($headers, self::namespaceHeader),
-            $this->unpack($headers, self::commandHeader),
-        ];
-    }
+    // public static function unpackNamespaceAndCommand(BunnyMessage $message): array
+    // {
+    //     return [
+    //         $this->unpack($message, self::namespaceHeader),
+    //         $this->unpack($message, self::commandHeader),
+    //     ];
+    // }
 
-    public static function packReplyMode(array &$headers, string $replyMode): void
-    {
-        if (
-            in_array(
-                $replyMode,
-                [
-                    self::replyNone,
-                    self::replyCorrelated,
-                    self::replyUncorrelated,
-                ]
-            )
-        ) {
+    public static function packReplyMode(
+        array &$headers,
+        string $replyMode
+    ): void {
+        if (in_array($replyMode, $this->replyModes())) {
             $headers['reply-to'] = $replyMode;
         }
     }
 
-    public static function unpackReplyMode(array &$headers): string
-    {
-        return $this->unpack($headers, 'reply-to');
-    }
+    // public static function unpackReplyMode(BunnyMessage $message): string
+    // {
+    //     return $this->unpack($message, 'reply-to');
+    // }
 
     public static function packRequest(
         array &$headers,
         string $namespace,
         string $command,
+        // $payload,
         string $replyMode
     ): void {
         $this->packNamespaceAndCommand($headers, $namespace, $command);
         $this->packReplyMode($headers, $replyMode);
+        // $message->context = CBOREncoder::encode($payload);
     }
 
-    public static function packSuccessResponse(array &$headers)
+    public static function packSuccessResponse(&$headers)
     {
         $headers['type'] = self::successResponse;
+        // $message->content = CBOREncoder::encode($message->content);
     }
 
-    public static function packErrorResponse(array &$headers, $error)
+    public static function packErrorResponse(array &$headers, Throwable $error)
     {
-        if ($error instanceof Failure) {
+        if ($error instanceof FailureException) {
             $headers['type'] = self::failureResponse;
             $headers[self::failureTypeHeader] = $error->type();
 
-            if ($error->message()) {
-                $headers[self::failureMessageHeader] = $error->message();
+            if ($error->getMessage()) {
+                $headers[self::failureMessageHeader] = $error->getMessage();
             }
         } else {
             $headers['type'] = self::errorResponse;
         }
     }
 
-    public static function unpackResponse(array &$headers)
-    {
+    // public static function unpackResponse(array &$headers)
+    // {
         // // TODO
         // switch ($this->unpack['type']) {
         //     case self::successResponse:
@@ -164,14 +164,23 @@ class Message
         // default:
         // return nil, fmt.Errorf("malformed response, message type '%s' is unexpected", msg.Type)
         // }
-    }
+    // }
 
-    private function unpack($headers, $key)
+    private function replyModes()
     {
-        if (array_key_exists($key, $headers)) {
-            return $headers[$key];
-        }
-
-        return null;
+        return [
+            self::replyNone,
+            self::replyCorrelated,
+            self::replyUncorrelated,
+        ];
     }
+
+    // private function unpack(BunnyMessage $message, $key)
+    // {
+    //     if (array_key_exists($key, $message->headers)) {
+    //         return $message->headers[$key];
+    //     }
+    //
+    //     return null;
+    // }
 }
