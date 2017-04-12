@@ -26,19 +26,20 @@ class Invoker implements InvokerInterface
         PeerId $peerId,
         Queues $queues,
         Client $broker,
-        InvokerLogging $invokerLogger,
+        InvokerLogging $logger,
         float $defaultTimeout // last becuase the async version is followed by preFetch
 )
     {
         $this->peerId = $peerId;
         $this->queues = $queues;
         $this->broker = $broker;
-        $this->invokerLogger = $invokerLogger;
+        $this->logger = $logger;
         $this->defaultTimeout = $defaultTimeout;
 
         $this->publishChannel = $broker->channel();
         $this->consumeChannel = $broker->channel();
         $this->handlers = [];
+        $this->callResponse = null; // the response of a call
     }
     /**
      * Sends a unicast command request to a specific peer and blocks until a
@@ -73,9 +74,54 @@ class Invoker implements InvokerInterface
         string $namespace,
         string $command,
         $payload,
-        string &$traceId
+        string &$traceId = null
     ) {
-        // call bunny run for $timeout and wait for response
+        // msg := &amqp.Publishing{
+        // MessageId: msgID.String(),
+        // Priority:  callBalancedPriority,
+        // }
+
+        $traceId = $context->traceId();
+        if (null === $traceId || $traceId === $messageId) {
+            $traceId = $messageId;
+        }
+
+        // traceID := amqputil.PackTrace(ctx, msg)
+        $headers['correlation-id'] = $traceId;
+        Message::packRequest(
+            $headers,
+            $namespace,
+            $command,
+            Message::replyCorrelated
+        );
+
+        var_dump($traceId);
+        $this->logger->logBalancedCallBegin(
+            $this->peerId,
+            $messageId,
+            $namespace,
+            $command,
+            $traceId,
+            $payload
+        );
+        $result = $this->call(
+            $context,
+            Exchanges::balancedExchange,
+            $namespace,
+            $headers,
+            $payload
+        );
+        $this->logger->logCallEnd(
+            $this->peerId,
+            $messageId,
+            $namespace,
+            $command,
+            $traceId,
+            $result
+            //err   // TODO: need to captures error
+        );
+
+        return $result;
     }
 
     /**
@@ -141,7 +187,7 @@ class Invoker implements InvokerInterface
             ]
         );
 
-        $this->invokerLogger->logBalancedExecute(
+        $this->logger->logBalancedExecute(
             $this->peerId,
             $messageId,
             $namespace,
@@ -179,7 +225,7 @@ class Invoker implements InvokerInterface
             ]
         );
 
-        $this->invokerLogger->logMulticaseExecute(
+        $this->logger->logMulticaseExecute(
             $this->peerId,
             $messageId,
             $namespace,
@@ -217,7 +263,9 @@ class Invoker implements InvokerInterface
         $this->consumeChannel->consume(
             function(Message $message, Channel $channel, Bunny $bunny) {
                 $this->isWaiting = false;
-                // $this->consumemethod, // TODO handle response
+                var_dump($message);
+                $this->callResponse = $message;
+                $this->publishChannel->stop();  // stop consuming as we have our response.
             },
             $queue,
             $queue, // use queue name as consumer tag
@@ -227,7 +275,7 @@ class Invoker implements InvokerInterface
         );
 
         // synchronous invoker has a preFetch of 1
-        $this->invokerLogger->logInvokerStart($this->peerId, 1);
+        $this->logger->logInvokerStart($this->peerId, 1);
     }
 
     /**
@@ -244,17 +292,31 @@ class Invoker implements InvokerInterface
         $this->publish($exchange, $key, $message, $headers);
     }
 
+    public function stop()
+    {
+        $this->logger->logInvokerStopping($this->peerId, 0);
+
+        $this->publishChannel = null; // no more publishing for us.
+
+        // TODO: do we need this???
+        // foreach ($this->handlers as $namespace => $handler) {
+        //     $this->unlisten($namespace);
+        // }
+
+        $this->logger->logInvokerStop($this->peerId);
+    }
+
     /**
      * publish sends an command request to the broker.
      */
-    public function publish(
+    private function publish(
         string $exchange,
         string $key,
         $payload,
         array $headers = []
     ) {
         if ($exchange === Exchanges::balancedExchange) {
-            $queue = $this->queues->get($channel, $key);
+            $queue = $this->queues->get($this->publishChannel, $key);
         }
 
         if (null === $this->publishChannel) {
@@ -269,35 +331,43 @@ class Invoker implements InvokerInterface
         );
     }
 
-    private function call(/*...*/) {
+    private function call(
+        Context $context,
+        string $exchange,
+        string $namespace,
+        array $headers,
+        $payload
+    ) {
         $this->isWaiting = true;
 
+        $this->publish( $exchange, $namespace, $payload, $headers        );
+
         do {
-            $bunny->run($timeout);
+            echo "RUNNING\n";
+            // TODO: handle timeout value a bit better
+            $this->broker->run($context->timeout()?: $this->defaultTimeout);
         } while ($this->isWaiting);
 
-        if (!$response) {
-            // timeed out
-        }
+        // if (!$response) {
+        //     // timeed out
+        // }
 
         if ($this->publishChannel === null) {
             $this->consumeChannel->close();
         }
-    }
 
-    public function stop()
-    {
-        $this->publishChannel = null; // no more publishing for us.
+        return $this->response;
     }
 
     private $peerId;
     private $queues;
     private $broker;
-    private $invokerLogger;
+    private $logger;
     private $defaultTimeout;
 
     private $publishChannel;
     private $consumeChannel;
     private $handlers;
     private $isWaiting;
+    private $callResponse;
 }

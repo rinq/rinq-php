@@ -94,7 +94,7 @@ class Message
         array &$headers,
         string $replyMode
     ): void {
-        if (in_array($replyMode, $this->replyModes())) {
+        if (in_array($replyMode, self::replyModes())) {
             $headers['reply-to'] = $replyMode;
         }
     }
@@ -111,8 +111,8 @@ class Message
         // $payload,
         string $replyMode
     ): void {
-        $this->packNamespaceAndCommand($headers, $namespace, $command);
-        $this->packReplyMode($headers, $replyMode);
+        self::packNamespaceAndCommand($headers, $namespace, $command);
+        self::packReplyMode($headers, $replyMode);
         // $message->context = CBOREncoder::encode($payload);
     }
 
@@ -166,7 +166,7 @@ class Message
         // }
     // }
 
-    private function replyModes()
+    private static function replyModes()
     {
         return [
             self::replyNone,

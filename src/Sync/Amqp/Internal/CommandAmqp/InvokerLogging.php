@@ -5,6 +5,7 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
 use Psr\Log\LoggerInterface;
+use Rinq\Exception\FailureException;
 use Rinq\Ident\MessageId;
 use Rinq\Ident\PeerId;
 
@@ -22,7 +23,7 @@ class InvokerLogging
         $this->logger->debug(
             sprintf(
                 '%s invoker ignored AMQP message, \'%s\' is not a valid message ID.',
-                $peerID.ShortString(),
+                $$peerId->shortString(),
                 $messageId
             )
         );
@@ -35,8 +36,8 @@ class InvokerLogging
     ) {
         $this->logger->debug(
     '%s invoker ignored AMQP message %s, %s',
-    peerID.ShortString(),
-    msgID.ShortString(),
+    $peerId->shortString(),
+    $messageId->shortString(),
     err,
     )
 }
@@ -52,85 +53,98 @@ class InvokerLogging
 ) {
         $this->logger->debug(
     '%s invoker began unicast '%s::%s' call %s to %s [%s] >>> %s',
-    peerID.ShortString(),
-    ns,
-    cmd,
-    msgID.ShortString(),
+    $peerId->shortString(),
+    $namespace,
+    $command,
+    $messageId->shortString(),
     target.ShortString(),
-    traceID,
+    $traceId,
     payload,
     )
 }
 
+
+logCallEnd(i.logger, i.peerID, msgID, $namespace, $command, $traceID, in, erd)
+
+
+
+*/
     public function logBalancedCallBegin(
-    PeerId $peerId,
-    MessageId $messageId,
-    string $namespace,
-    string $command,
-    string $traceId,
-    $payload,
-) {
+        PeerId $peerId,
+        MessageId $messageId,
+        string $namespace,
+        string $command,
+        MessageId $traceId,
+        $payload
+    ) {
         $this->logger->debug(
-    '%s invoker began '%s::%s' call %s [%s] >>> %s',
-    peerID.ShortString(),
-    ns,
-    cmd,
-    msgID.ShortString(),
-    traceID,
-    payload,
-    )
-}
+            sprintf(
+                '%s invoker began \'%s::%s\' call %s [%s] >>> %s',
+                $peerId->shortString(),
+                $namespace,
+                $command,
+                $messageId->shortString(),
+                $traceId,
+                json_encode($payload)
+            )
+        );
+    }
 
     public function logCallEnd(
-    PeerId $peerId,
-    MessageId $messageId,
-    string $namespace,
-    string $command,
-    string $traceId,
-    $payload,
-    err error,
-) {
-    switch e := err.(type) {
-    case nil:
-        $this->logger->debug(
-    '%s invoker completed '%s::%s' call %s successfully [%s] <<< %s',
-    peerID.ShortString(),
-    ns,
-    cmd,
-    msgID.ShortString(),
-    traceID,
-    payload,
-    )
-    case rinq.Failure:
-    var message string
-    if e.Message != "" {
-    message = ": " + e.Message
-    }
+        PeerId $peerId,
+        MessageId $messageId,
+        string $namespace,
+        string $command,
+        MessageId $traceId,
+        $payload,
+        $error = null
+    ) {
+        if (null === $error) {
+            $this->logger->debug(
+                sprintf(
+                    '%s invoker completed \'%s::%s\' call %s successfully [%s] <<< %s',
+                    $peerId->shortString(),
+                    $namespace,
+                    $command,
+                    $messageId->shortString(),
+                    $traceId,
+                    json_encode($payload)
+                )
+            );
+        } else if ($error instanceof FailureException) {
+            $message = '';
+            if (null !== $error->message()) {
+                $message = ": " . $error->message();
+            }
 
-        $this->logger->debug(
-    '%s invoker completed '%s::%s' call %s with '%s' failure%s [%s] <<< %s',
-    peerID.ShortString(),
-    ns,
-    cmd,
-    msgID.ShortString(),
-    e.Type,
-    message,
-    traceID,
-    payload,
-    )
-    default:
-        $this->logger->debug(
-    '%s invoker completed '%s::%s' call %s with error [%s] <<< %s',
-    peerID.ShortString(),
-    ns,
-    cmd,
-    msgID.ShortString(),
-    traceID,
-    err,
-    )
+            $this->logger->debug(
+                sprintf(
+                    '%s invoker completed \'%s::%s\' call %s with \'%s\' failure%s [%s] <<< %s',
+                    $peerId->shortString(),
+                    $namespace,
+                    $command,
+                    $messageId->shortString(),
+                    $error->type(),
+                    $message,
+                    $traceId,
+                    json_encode($payload)
+                )
+            );
+        } else {
+            $this->logger->debug(
+                sprintf(
+                    '%s invoker completed \'%s::%s\' call %s with error [%s] <<< %s',
+                    $peerId->shortString(),
+                    $namespace,
+                    $command,
+                    $messageId->shortString(),
+                    $traceId,
+                    $error
+                )
+            );
+        }
     }
-}
-
+/*
     public function logAsyncRequest(
     PeerId $peerId,
     MessageId $messageId,
@@ -142,11 +156,11 @@ class InvokerLogging
 ) {
         $this->logger->debug(
     '%s invoker sent asynchronous '%s::%s' call request %s [%s] >>> %s',
-    peerID.ShortString(),
-    ns,
-    cmd,
-    msgID.ShortString(),
-    traceID,
+    $peerId->shortString(),
+    $namespace,
+    $command,
+    $messageId->shortString(),
+    $traceId,
     payload,
     )
 }
@@ -162,11 +176,11 @@ class InvokerLogging
 ) {
         $this->logger->debug(
     '%s invoker received asynchronous '%s::%s' call response %s [%s] >>> %s',
-    peerID.ShortString(),
-    ns,
-    cmd,
-    msgID.ShortString(),
-    traceID,
+    $peerId->shortString(),
+    $namespace,
+    $command,
+    $messageId->shortString(),
+    $traceId,
     payload,
     )
 }
@@ -231,34 +245,39 @@ class InvokerLogging
             )
         );
     }
-/*
-    public function logInvokerStopping(
-    PeerId $peerId,
-    pending int,
-) {
+
+    public function logInvokerStopping( PeerId $peerId, int $pending)
+    {
         $this->logger->debug(
-    '%s invoker stopping gracefully (pending: %d)',
-    peerID.ShortString(),
-    pending,
-    )
-}
+            sprintf(
+                '%s invoker stopping gracefully (pending: %d)',
+                $peerId->shortString(),
+                $pending
+            )
+        );
+    }
 
     public function logInvokerStop(
-    PeerId $peerId,
-    err error,
-) {
-    if err == nil {
-        $this->logger->debug(
-    '%s invoker stopped',
-    peerID.ShortString(),
-    )
-    } else {
-        $this->logger->debug(
-    '%s invoker stopped: %s',
-    peerID.ShortString(),
-    err,
-    )
+        PeerId $peerId,
+        $error = null
+    ) {
+        if (null === $error) {
+            $this->logger->debug(
+                sprintf(
+                    '%s invoker stopped',
+                    $peerId->shortString()
+                )
+            );
+        } else {
+            $this->logger->debug(
+                sprintf(
+                    '%s invoker stopped: %s',
+                    $peerId->shortString(),
+                    $error
+                )
+            );
+        }
     }
-*/
+
     private $logger;
 }

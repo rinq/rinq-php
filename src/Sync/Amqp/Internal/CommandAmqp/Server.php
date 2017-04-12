@@ -165,7 +165,8 @@ class Server implements ServerInterface
     private function dispatch(BunnyMessage $message, Channel $channel)
     {
         $messageId = MessageId::createFromString(
-            $message->getHeader('message-id')
+            // TODO: Is this logic correct?
+            $message->getHeader('message-id')?: $message->getHeader('correlation-id')
         );
 
         if (null === $messageId) {

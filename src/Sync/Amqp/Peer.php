@@ -9,10 +9,12 @@ use Bunny\Client;
 use Bunny\Message;
 use Bunny\Exception\ClientException;
 use Rinq\Ident\PeerId;
+use Rinq\Ident\SessionId;
 use Rinq\Internal\Command\Invoker;
 use Rinq\Internal\Command\Server;
 use Rinq\Peer as PeerInterface;
-use Rinq\Session;
+use Rinq\Session as SessionInterface;
+use Rinq\Sync\Amqp\Internal\LocalSession\Session;
 
 /*
  * Peer represents a connection to a Rinq network.
@@ -60,31 +62,27 @@ final class Peer implements PeerInterface
      * Sessions created after the peer has been stopped are unusable. Any
      * operation will fail immediately.
      */
-    public function session(): Session
+    public function session(): SessionInterface
     {
-        // TODO:
-        // id := ident.SessionID{
-        //     Peer: p.id,
-        //     Seq:  atomic.AddUint32(&p.seq, 1),
-        // }
-        //
+        // TODO
         // cat := localsession.NewCatalog(id, p.logger)
-        // sess := localsession.NewSession(
-        //     id,
-        //     cat,
-        //     p.invoker,
-        //     p.notifier,
-        //     p.listener,
-        //     p.logger,
-        // )
-        //
+        $session = new Session(
+            SessionId::create($this->peerId, rand(0,10)), // TODO: Need actual sequence and not rand. see -> Seq:  atomic.AddUint32(&p.seq, 1),
+            // cat,
+            $this->invoker
+            // p.notifier,
+            // p.listener,
+            // p.logger,
+        );
+
+        // TODO
         // p.localStore.Add(sess, cat)
         // go func() {
         //     <-sess.Done()
         //     p.localStore.Remove(sess.ID())
         // }()
-        //
-        // return sess
+
+        return $session;
     }
 
     /**

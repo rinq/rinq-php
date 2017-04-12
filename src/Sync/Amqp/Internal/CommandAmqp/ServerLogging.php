@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use Rinq\Failure;
 use Rinq\Context;
 use Rinq\Request;
+use Rinq\Exception\FailureException;
 use Rinq\Ident\MessageId;
 use Rinq\Ident\PeerId;
 
@@ -71,7 +72,7 @@ class ServerLogging
         MessageId $messageId,
         Request $request,
         $payload,
-        string $error = null
+        $error = null
     ) {
 
         if (null === $error) {
@@ -86,7 +87,7 @@ class ServerLogging
                     json_encode($payload)
                 )
             );
-        } else if ($error instanceof Failure) {
+        } else if ($error instanceof FailureException) {
             $message = '';
             if (null !== $error->message()) {
                 $message = ": " . $error->message();

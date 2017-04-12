@@ -5,7 +5,10 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq;
 
 use Rinq\Exception\NotFoundException;
+use Rinq\Ident\MessageId;
 use Rinq\Ident\SessionId;
+use Foo\AsyncHandler;
+use Foo\NotificationHandler;
 
 /**
  * Session is an interface representing a "local" session, that is, a session
@@ -75,7 +78,7 @@ interface Session
         Context $context,
         string $namespace,
         string $command,
-        mixed $payload
+        $payload
     );
 
     /**
@@ -113,7 +116,7 @@ interface Session
         Context $context,
         string $namespace,
         string $command,
-        mixed $payload
+        $payload
     ): MessageId;
 
     /**
@@ -146,7 +149,7 @@ interface Session
         Context $context,
         string $namespace,
         string $command,
-        mixed $payload
+        $payload
     ): void;
 
     /**
@@ -172,7 +175,7 @@ interface Session
         Context $context,
         string $namespace,
         string $command,
-        mixed $payload
+        $payload
     ): void;
 
     /**
@@ -193,7 +196,7 @@ interface Session
         Context $context,
         SessionId $target,
         string $type,
-        mixed $payload
+        $payload
     ): void;
 
     /**
@@ -218,7 +221,7 @@ interface Session
         Context $context,
         array $constraint,
         string $type,
-        mixed $payload
+        $payload
     ): void;
 
     /**
