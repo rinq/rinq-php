@@ -14,7 +14,8 @@ class Logging
         $this->logger = $logger;
     }
 
-    public function logStartedListening( PeerId $peerId, string $namespace ) {
+    public function logStartedListening(PeerId $peerId, string $namespace)
+    {
         $this->logger->info(
             sprintf(
                 '%s started listening for command requests in \'%s\' namespace',
@@ -24,7 +25,8 @@ class Logging
         );
     }
 
-    public function logStoppedListening( PeerId $peerId, string $namespace ) {
+    public function logStoppedListening(PeerId $peerId, string $namespace)
+    {
         $this->logger->info(
             sprintf(
                 '%s stopped listening for command requests in \'%s\' namespace',

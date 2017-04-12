@@ -4,10 +4,9 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Sync\Amqp;
 
-use Bunny\Channel;
 use Bunny\Client;
-use Bunny\Message;
 use Bunny\Exception\ClientException;
+use Bunny\Message;
 use Rinq\Ident\PeerId;
 use Rinq\Ident\SessionId;
 use Rinq\Internal\Command\Invoker;
@@ -67,7 +66,7 @@ final class Peer implements PeerInterface
         // TODO
         // cat := localsession.NewCatalog(id, p.logger)
         $session = new Session(
-            SessionId::create($this->peerId, rand(0,10)), // TODO: Need actual sequence and not rand. see -> Seq:  atomic.AddUint32(&p.seq, 1),
+            SessionId::create($this->peerId, rand(0, 10)), // TODO: Need actual sequence and not rand. see -> Seq:  atomic.AddUint32(&p.seq, 1),
             // cat,
             $this->invoker
             // p.notifier,

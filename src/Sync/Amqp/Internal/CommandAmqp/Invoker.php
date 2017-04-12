@@ -4,9 +4,9 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
-use Bunny\Exception\ClientException;
 use Bunny\Channel;
 use Bunny\Client;
+use Bunny\Exception\ClientException;
 use Bunny\Message as BunnyMessage;
 use CBOR\CBOREncoder;
 use Rinq\Context;
@@ -264,7 +264,7 @@ class Invoker implements InvokerInterface
         );
 
         $this->consumeChannel->consume(
-            function(BunnyMessage $message, Channel $channel, Client $bunny) {
+            function (BunnyMessage $message, Channel $channel, Client $bunny) {
                 $this->isWaiting = false;
                 $this->callResponse = Message::unpackResponse($message);
                 $bunny->stop();  // stop consuming as we have our response.
@@ -349,7 +349,7 @@ class Invoker implements InvokerInterface
             // TODO: move to helper function
             try {
                 // TODO: time run() and subtract from $timeout
-                $this->broker->run($context->timeout()?: $this->defaultTimeout);
+                $this->broker->run($context->timeout() ?: $this->defaultTimeout);
             } catch (ClientException $e) {
                 $error = error_get_last();
                 if (stripos($error['message'], 'Interrupted system call') === false) {

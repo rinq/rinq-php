@@ -4,7 +4,6 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
-use Throwable;
 use Bunny\Channel;
 use CBOR\CBOREncoder;
 use Rinq\Context;
@@ -12,6 +11,7 @@ use Rinq\Exception\FailureException;
 use Rinq\Ident\MessageId;
 use Rinq\Request;
 use Rinq\Response as ResponseInterface;
+use Throwable;
 
 /**
  * Response sends a reply to incoming command requests.

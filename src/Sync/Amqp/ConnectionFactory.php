@@ -4,10 +4,9 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Sync\Amqp;
 
+use Bunny\Channel;
 use Bunny\Client;
 use Bunny\Constants;
-use Bunny\Message;
-use Bunny\Channel;
 use Bunny\Exception\ClientException;
 use Rinq\Ident\PeerId;
 use Rinq\Sync\Amqp\Internal\CommandAmqp\Exchanges;

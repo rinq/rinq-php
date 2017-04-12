@@ -74,10 +74,10 @@ final class Request
     }
 
     /**
-     * @param Revision $source    The revision of the session that sent the request, at the time it was sent.
-     * @param string   $namespace Namespace is the command namespace.
-     * @param string   $command   Command is the application-defined command name for the request.
-     * @param mixed    $payload   Payload contains optional application-defined information about the request.
+     * @param Revision $source      The revision of the session that sent the request, at the time it was sent.
+     * @param string   $namespace   Namespace is the command namespace.
+     * @param string   $command     Command is the application-defined command name for the request.
+     * @param mixed    $payload     Payload contains optional application-defined information about the request.
      * @param bool     $IsMulticast True if the command request was (potentially) sent to more than one peer.
      */
     private function __construct(

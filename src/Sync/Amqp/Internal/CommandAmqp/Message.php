@@ -4,10 +4,10 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
-use Throwable;
 use Bunny\Message as BunnyMessage;
 use CBOR\CBOREncoder;
 use Rinq\Exception\FailureException;
+use Throwable;
 
 class Message
 {

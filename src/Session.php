@@ -4,11 +4,11 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq;
 
+use Foo\AsyncHandler;
+use Foo\NotificationHandler;
 use Rinq\Exception\NotFoundException;
 use Rinq\Ident\MessageId;
 use Rinq\Ident\SessionId;
-use Foo\AsyncHandler;
-use Foo\NotificationHandler;
 
 /**
  * Session is an interface representing a "local" session, that is, a session

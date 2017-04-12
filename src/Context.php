@@ -35,7 +35,7 @@ final class Context
     /**
      * @return string The unique identifier for the context.
      */
-    public function traceId(): ?string
+    public function traceId(): ? string
     {
         return $this->traceId;
     }

@@ -4,22 +4,22 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Sync\Amqp\Internal\LocalSession;
 
+use Foo\AsyncHandler;
+use Foo\NotificationHandler;
 use Rinq\Context;
-use Rinq\Ident\Reference;
 use Rinq\Ident\MessageId;
+use Rinq\Ident\Reference;
 use Rinq\Ident\SessionId;
 use Rinq\Internal\Command\Invoker;
 use Rinq\Revision;
 use Rinq\Session as SessionInterface;
-use Foo\AsyncHandler;
-use Foo\NotificationHandler;
 
 /**
  * Local Session Store.
  */
 class Session implements SessionInterface
 {
-/*
+    /*
 type session struct {
     id       ident.SessionID
     catalog  Catalog
@@ -42,7 +42,8 @@ type session struct {
         // Notifier $notifier, TODO:
         // Listener $listener, TODO:
         // SessionLogging $logger TODO:
-    ) {
+)
+    {
         $this->sessionId = $sessionId;
         $this->invoker = $invoker;
 
@@ -189,7 +190,7 @@ type session struct {
         string $command,
         $payload
     ): MessageId {
-    // var msgID ident.MessageID
+        // var msgID ident.MessageID
     //
     // if err := rinq.ValidateNamespace(ns); err != nil {
     // return msgID, err
@@ -214,7 +215,7 @@ type session struct {
     // logAsyncRequest(s.logger, msgID, $namespace, cmd, out, traceID)
     //
     // return msgID, nil
-}
+    }
 
     /**
      * SetAsyncHandler sets the asynchronous call handler.
@@ -226,7 +227,7 @@ type session struct {
      */
     public function setAsyncHandler(AsyncHandler $handler)
     {
-    // s.mutex.RLock()
+        // s.mutex.RLock()
     // defer s.mutex.RUnlock()
     //
     // select {
@@ -252,7 +253,7 @@ type session struct {
     // )
     //
     // return nil
-}
+    }
 
     /**
      * Execute sends a command request to the next available peer listening to
@@ -276,7 +277,7 @@ type session struct {
         string $command,
         $payload
     ): void {
-    // if err := rinq.ValidateNamespace(ns); err != nil {
+        // if err := rinq.ValidateNamespace(ns); err != nil {
     // return err
     // }
     //
@@ -301,7 +302,7 @@ type session struct {
     // }
     //
     // return err
-}
+    }
 
     /**
      * Execute sends a command request to all peers listening to the $namespace
@@ -328,7 +329,7 @@ type session struct {
         string $command,
         $payload
     ): void {
-    // if err := rinq.ValidateNamespace(ns); err != nil {
+        // if err := rinq.ValidateNamespace(ns); err != nil {
     // return err
     // }
     //
@@ -353,7 +354,7 @@ type session struct {
     // }
     //
     // return err
-}
+    }
 
     /**
      * Notify sends a message directly to another session.
@@ -375,7 +376,7 @@ type session struct {
         string $type,
         $payload
     ): void {
-    // if err := target.Validate(); err != nil || target.Seq == 0 {
+        // if err := target.Validate(); err != nil || target.Seq == 0 {
     // return fmt.Errorf("session ID %s is invalid", target)
     // }
     //
@@ -400,7 +401,7 @@ type session struct {
     // }
     //
     // return err
-}
+    }
 
     /**
      * NotifyMany sends a message to multiple sessions.
@@ -426,7 +427,7 @@ type session struct {
         string $type,
         $payload
     ): void {
-    // select {
+        // select {
     // case <-s.done:
     // return rinq.NotFoundError{ID: s.id}
     // default:
@@ -447,14 +448,14 @@ type session struct {
     // }
     //
     // return err
-}
+    }
 
     /**
      * Listen begins listening for notifications sent to this session.
      */
     public function listen(NotificationHandler $handler): void
     {
-    // if handler == nil {
+        // if handler == nil {
     // panic("handler must not be nil")
     // }
     //
@@ -499,14 +500,14 @@ type session struct {
     // }
     //
     // return nil
-}
+    }
 
     /**
      * Unlisten stops listening for notifications.
      */
     public function unlisten(): void
     {
-//     s.mutex.RLock()
+        //     s.mutex.RLock()
 //     defer s.mutex.RUnlock()
 //
 //     select {
@@ -533,14 +534,14 @@ type session struct {
 //     if s.destroy() {
 //     logSessionDestroy(s.logger, s.catalog, "")
 //     }
-}
+    }
 
     /**
      * Close destroys the session after any pending calls have completed.
      */
     public function close(): void
     {
-//     s.mutex.Lock()
+        //     s.mutex.Lock()
 //     defer s.mutex.Unlock()
 //
 //     select {
@@ -557,7 +558,7 @@ type session struct {
 //
 //     public function done() <-chan struct{} {
 //     return s.done
-}
+    }
 
     private $sessionId;
     private $invoker;

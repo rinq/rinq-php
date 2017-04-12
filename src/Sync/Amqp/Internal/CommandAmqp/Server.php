@@ -4,18 +4,17 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
-use Throwable;
 use Bunny\Channel;
 use Bunny\Client;
 use Bunny\Message as BunnyMessage;
 use CBOR\CBOREncoder;
-use Rinq\Failure;
-use Rinq\Request;
 use Rinq\Context;
-use Rinq\Revision;
-use Rinq\Ident\PeerId;
 use Rinq\Ident\MessageId;
+use Rinq\Ident\PeerId;
 use Rinq\Internal\Command\Server as ServerInterface;
+use Rinq\Request;
+use Rinq\Revision;
+use Throwable;
 
 /**
  * Server processes command requests made by an invoker.
@@ -63,7 +62,7 @@ class Server implements ServerInterface
         $queue = $this->queues->get($this->consumeChannel, $namespace);
 
         $this->consumeChannel->consume(
-            function(BunnyMessage $message, Channel $channel, Client $bunny) {
+            function (BunnyMessage $message, Channel $channel, Client $bunny) {
                 $this->dispatch($message, $channel);
             },
             $queue,     // $queue
@@ -132,7 +131,7 @@ class Server implements ServerInterface
         );
 
         $this->consumeChannel->consume(
-            function(BunnyMessage $message, Channel $channel, Client $bunny) {
+            function (BunnyMessage $message, Channel $channel, Client $bunny) {
                 $this->dispatch($message, $channel);
             },
             $queue,
@@ -166,12 +165,13 @@ class Server implements ServerInterface
     {
         $messageId = MessageId::createFromString(
             // TODO: Is this logic correct?
-            $message->getHeader('message-id')?: $message->getHeader('correlation-id')
+            $message->getHeader('message-id') ?: $message->getHeader('correlation-id')
         );
 
         if (null === $messageId) {
             $channel->reject($message, false); // don't requeue
             $this->logger->logServerInvalidMessageID($this->peerId, $messageId);
+
             return;
         }
 
@@ -204,6 +204,7 @@ class Server implements ServerInterface
                 $message->exchange === Exchange::balancedExchange // requeue if "balanced"
             );
             $this->logger->logNoLongerListening($peerId, $messageId, $namespace);
+
             return;
         }
 
@@ -290,7 +291,7 @@ class Server implements ServerInterface
                 $request,
                 $response->payload
             );
-        } else if ($message->exchange === Exchanges::balancedExchange) {
+        } elseif ($message->exchange === Exchanges::balancedExchange) {
             if (microtime(true) > $dl) {
                 $channel->reject($message, false);  // don't requeue
                 $this->logger->logRequestRejected(

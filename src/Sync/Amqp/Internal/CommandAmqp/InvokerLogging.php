@@ -111,10 +111,10 @@ logCallEnd(i.logger, i.peerID, msgID, $namespace, $command, $traceID, in, erd)
                     json_encode($payload)
                 )
             );
-        } else if ($error instanceof FailureException) {
+        } elseif ($error instanceof FailureException) {
             $message = '';
             if (null !== $error->message()) {
-                $message = ": " . $error->message();
+                $message = ': ' . $error->message();
             }
 
             $this->logger->debug(
@@ -246,7 +246,7 @@ logCallEnd(i.logger, i.peerID, msgID, $namespace, $command, $traceID, in, erd)
         );
     }
 
-    public function logInvokerStopping( PeerId $peerId, int $pending)
+    public function logInvokerStopping(PeerId $peerId, int $pending)
     {
         $this->logger->debug(
             sprintf(

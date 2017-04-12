@@ -15,7 +15,7 @@ final class ErrorException extends RuntimeException
     /**
      * @param string $type The type of error.
      */
-    public static  function create(string $type, string $message = null)
+    public static function create(string $type, string $message = null)
     {
         return new self($type, $message);
     }

@@ -3,6 +3,7 @@
 declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Ident;
+
 use RuntimeException;
 
 /**

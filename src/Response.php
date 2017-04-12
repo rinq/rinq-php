@@ -4,8 +4,8 @@ declare(strict_types=1);  // @codeCoverageIgnore
 
 namespace Rinq;
 
-use Throwable;
 use Rinq\Exception\FailureException;
+use Throwable;
 
 /**
  * Response sends a reply to incoming command requests.

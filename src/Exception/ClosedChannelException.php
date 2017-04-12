@@ -6,6 +6,6 @@ namespace Rinq\Exception;
 
 use RuntimeException;
 
-class CloseChannelException extends RuntimeException
+class ClosedChannelException extends RuntimeException
 {
 }

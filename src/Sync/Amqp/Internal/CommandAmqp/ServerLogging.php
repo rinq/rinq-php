@@ -5,12 +5,12 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
 use Psr\Log\LoggerInterface;
-use Rinq\Failure;
 use Rinq\Context;
-use Rinq\Request;
 use Rinq\Exception\FailureException;
+use Rinq\Failure;
 use Rinq\Ident\MessageId;
 use Rinq\Ident\PeerId;
+use Rinq\Request;
 
 class ServerLogging
 {
@@ -52,7 +52,6 @@ class ServerLogging
         MessageId $messageId,
         Request $request
     ) {
-
         $this->logger->debug(
             sprintf(
                 '%s server began \'%s::%s\' command request %s [%s] <<< %s',
@@ -74,7 +73,6 @@ class ServerLogging
         $payload,
         $error = null
     ) {
-
         if (null === $error) {
             $this->logger->debug(
                 sprintf(
@@ -87,10 +85,10 @@ class ServerLogging
                     json_encode($payload)
                 )
             );
-        } else if ($error instanceof FailureException) {
+        } elseif ($error instanceof FailureException) {
             $message = '';
             if (null !== $error->message()) {
-                $message = ": " . $error->message();
+                $message = ': ' . $error->message();
             }
 
             $this->logger->debug(
@@ -142,7 +140,6 @@ class ServerLogging
         MessageId $messageId,
         Request $request
     ) {
-
         $this->logger->debug(
             sprintf(
                 '%s did not write a response for \'%s::%s\' command request, request %s has been re-queued [%s]',
