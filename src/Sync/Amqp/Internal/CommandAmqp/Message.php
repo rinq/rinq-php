@@ -136,35 +136,36 @@ class Message
         }
     }
 
-    // public static function unpackResponse(array &$headers)
-    // {
-        // // TODO
-        // switch ($this->unpack['type']) {
-        //     case self::successResponse:
-        //         return rinq.NewPayloadFromBytes(msg.Body), nil
-        //
-        // case failureResponse:
-        // failureType, _ := $headers[failureTypeHeader].(string)
-        // if failureType == "" {
-        // return nil, errors.New("malformed response, failure type must be a non-empty string")
-        // }
-        //
-        // failureMessage, _ := $headers[failureMessageHeader].(string)
-        //
-        // payload := rinq.NewPayloadFromBytes(msg.Body)
-        // return payload, rinq.Failure{
-        // Type:    failureType,
-        // Message: failureMessage,
-        // Payload: payload,
-        // }
-        //
-        // case errorResponse:
-        // return nil, rinq.CommandError(msg.Body)
-        //
-        // default:
-        // return nil, fmt.Errorf("malformed response, message type '%s' is unexpected", msg.Type)
-        // }
-    // }
+    public static function unpackResponse(BunnyMessage $message)
+    {
+        switch (self::unpack($message, 'type')) {
+            case self::successResponse:
+                return CBOREncoder::decode($message->content);
+
+            case failureResponse:
+            // failureType, _ := $headers[failureTypeHeader].(string)
+            // if failureType == "" {
+            // return nil, errors.New("malformed response, failure type must be a non-empty string")
+            // }
+            //
+            // failureMessage, _ := $headers[failureMessageHeader].(string)
+            //
+            // payload := rinq.NewPayloadFromBytes(msg.Body)
+            // return payload, rinq.Failure{
+            // Type:    failureType,
+            // Message: failureMessage,
+            // Payload: payload,
+            // }
+            //
+            // case errorResponse:
+            // return nil, rinq.CommandError(msg.Body)
+            //
+            // default:
+            // return nil, fmt.Errorf("malformed response, message type '%s' is unexpected", msg.Type)
+            // }
+                throw new \RuntimeException('todo: implement this.');
+        }
+    }
 
     private static function replyModes()
     {
@@ -175,12 +176,12 @@ class Message
         ];
     }
 
-    // private function unpack(BunnyMessage $message, $key)
-    // {
-    //     if (array_key_exists($key, $message->headers)) {
-    //         return $message->headers[$key];
-    //     }
-    //
-    //     return null;
-    // }
+    private static function unpack(BunnyMessage $message, $key)
+    {
+        if (array_key_exists($key, $message->headers)) {
+            return $message->headers[$key];
+        }
+
+        return null;
+    }
 }

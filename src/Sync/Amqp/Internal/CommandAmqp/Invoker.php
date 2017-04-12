@@ -4,8 +4,10 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Sync\Amqp\Internal\CommandAmqp;
 
+use Bunny\Exception\ClientException;
 use Bunny\Channel;
 use Bunny\Client;
+use Bunny\Message as BunnyMessage;
 use CBOR\CBOREncoder;
 use Rinq\Context;
 use Rinq\Ident\MessageId;
@@ -87,7 +89,9 @@ class Invoker implements InvokerInterface
         }
 
         // traceID := amqputil.PackTrace(ctx, msg)
-        $headers['correlation-id'] = $traceId;
+        $headers['correlation-id'] = strval($traceId);
+        $headers['message-id'] = strval($messageId);
+
         Message::packRequest(
             $headers,
             $namespace,
@@ -95,7 +99,6 @@ class Invoker implements InvokerInterface
             Message::replyCorrelated
         );
 
-        var_dump($traceId);
         $this->logger->logBalancedCallBegin(
             $this->peerId,
             $messageId,
@@ -108,8 +111,8 @@ class Invoker implements InvokerInterface
             $context,
             Exchanges::balancedExchange,
             $namespace,
-            $headers,
-            $payload
+            $payload,
+            $headers
         );
         $this->logger->logCallEnd(
             $this->peerId,
@@ -261,11 +264,10 @@ class Invoker implements InvokerInterface
         );
 
         $this->consumeChannel->consume(
-            function(Message $message, Channel $channel, Bunny $bunny) {
+            function(BunnyMessage $message, Channel $channel, Client $bunny) {
                 $this->isWaiting = false;
-                var_dump($message);
-                $this->callResponse = $message;
-                $this->publishChannel->stop();  // stop consuming as we have our response.
+                $this->callResponse = Message::unpackResponse($message);
+                $bunny->stop();  // stop consuming as we have our response.
             },
             $queue,
             $queue, // use queue name as consumer tag
@@ -297,6 +299,7 @@ class Invoker implements InvokerInterface
         $this->logger->logInvokerStopping($this->peerId, 0);
 
         $this->publishChannel = null; // no more publishing for us.
+        $this->isWaiting = false;
 
         // TODO: do we need this???
         // foreach ($this->handlers as $namespace => $handler) {
@@ -334,29 +337,41 @@ class Invoker implements InvokerInterface
     private function call(
         Context $context,
         string $exchange,
-        string $namespace,
-        array $headers,
-        $payload
+        string $key,
+        $payload,
+        array $headers
     ) {
         $this->isWaiting = true;
 
-        $this->publish( $exchange, $namespace, $payload, $headers        );
+        $this->publish($exchange, $key, $payload, $headers);
 
         do {
-            echo "RUNNING\n";
+            // TODO: move to helper function
+            try {
+                // TODO: time run() and subtract from $timeout
+                $this->broker->run($context->timeout()?: $this->defaultTimeout);
+            } catch (ClientException $e) {
+                $error = error_get_last();
+                if (stripos($error['message'], 'Interrupted system call') === false) {
+                    throw $e;
+                }
+
+                if (function_exists('pcntl_signal_dispatch')) {
+                    pcntl_signal_dispatch();
+                }
+            }
             // TODO: handle timeout value a bit better
-            $this->broker->run($context->timeout()?: $this->defaultTimeout);
         } while ($this->isWaiting);
 
         // if (!$response) {
-        //     // timeed out
+        //     // timed out
         // }
 
         if ($this->publishChannel === null) {
             $this->consumeChannel->close();
         }
 
-        return $this->response;
+        return $this->callResponse;
     }
 
     private $peerId;

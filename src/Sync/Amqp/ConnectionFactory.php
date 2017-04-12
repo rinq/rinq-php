@@ -83,10 +83,10 @@ final class ConnectionFactory
                 $peerId = PeerId::create(time(), rand(1, 0xFFFF));
 
                 $channel->queueDeclare(
-                    $peerId,    // queue
-                    false,      // passive
-                    false,      // durable
-                    true        // exclusive
+                    $peerId->shortString(), // queue
+                    false,                  // passive
+                    false,                  // durable
+                    true                    // exclusive
                 );
 
                 $this->config->logger()->debug(

@@ -129,6 +129,7 @@ final class Peer implements PeerInterface
         $this->isRunning = true;
 
         do {
+            // TODO: move to helper function
             try {
                 // TODO: time run() and subtract from $timeout
                 $this->broker->run($timeout);

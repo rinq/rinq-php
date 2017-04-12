@@ -5,6 +5,7 @@ declare(strict_types=1); // @codeCoverageIgnore
 namespace Rinq\Sync\Amqp\Internal\LocalSession;
 
 use Rinq\Context;
+use Rinq\Ident\Reference;
 use Rinq\Ident\MessageId;
 use Rinq\Ident\SessionId;
 use Rinq\Internal\Command\Invoker;
@@ -55,7 +56,7 @@ type session struct {
         // <-catalog.Done()
         // sess.destroy()
         // }()
-
+        $this->sequence = 0;
     }
 
     /**
@@ -129,7 +130,10 @@ type session struct {
 
         // TODO: need to create actual message id.
         // msgID := s.catalog.NextMessageID()
-        $messageId = MessageId::createFromString('58EAFBB2-1C02.1@0#1');
+        $messageId = MessageId::create(
+            Reference::create($this->sessionId, 0),
+            ++$this->sequence
+        );
 
         // start := time.Now()
         $traceId = null; // passed by reference.
@@ -557,4 +561,6 @@ type session struct {
 
     private $sessionId;
     private $invoker;
+
+    private $sequence;
 }
