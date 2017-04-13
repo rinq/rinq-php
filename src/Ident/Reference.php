@@ -4,6 +4,8 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Ident;
 
+use RuntimeException;
+
 /**
  * Reference refers to a session at a specific revision.
  */
@@ -41,7 +43,7 @@ class Reference
 
         if (count($parts) !== 2 || !ctype_digit($parts[1])) {
             throw new RuntimeException(
-                sprintf('Reference ID %s is invalid.', $reference)
+                sprintf('Reference %s is invalid.', $reference)
             );
         }
 

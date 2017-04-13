@@ -6,7 +6,7 @@ namespace Rinq;
 
 describe(Attribute::class, function () {
     describe('->construct()', function () {
-        it('should construct a non-frozen attribute', function () {
+        it('constructs a non-frozen attribute', function () {
             $subject = Attribute::create('foo', '{"bar":"baz"}');
 
             expect($subject->key())->to->equal('foo');
@@ -14,7 +14,7 @@ describe(Attribute::class, function () {
             expect($subject->isFrozen())->to->be->false();
         });
 
-        it('should construct a frozen attribute', function () {
+        it('constructs a frozen attribute', function () {
             $subject = Attribute::freeze('foo', '{"bar":"baz"}');
 
             expect($subject->key())->to->equal('foo');

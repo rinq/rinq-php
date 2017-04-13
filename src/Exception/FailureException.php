@@ -22,10 +22,23 @@ final class FailureException extends RuntimeException
      * @param string      $type    The type of failure.
      * @param string|null $message Optional human-readable description of the failure.
      * @param mixed       $payload Optional application-defined payload.
+     *
+     * @throws RuntimeException If the failure type is empty.
      */
-    public static function create(string $type, string $message = null, $payload = null)
+    public function __construct(string $type, string $message = null, $payload = null)
     {
-        return new self($type, $message, $payload);
+        if ($type === '') {
+            throw new RuntimeException('Failure type cannot be empty.');
+        }
+
+        if (null === $message) {
+            $message = 'Unknown failure.';
+        }
+
+        parent::__construct($message);
+
+        $this->type = $type;
+        $this->payload = $payload;
     }
 
     /**
@@ -46,29 +59,6 @@ final class FailureException extends RuntimeException
     public function payload()
     {
         return $this->payload;
-    }
-
-    /**
-     * @param string      $type    The type of failure.
-     * @param string|null $message Optional human-readable description of the failure.
-     * @param mixed       $payload Optional application-defined payload.
-     *
-     * @throws RuntimeException If the failure type is empty.
-     */
-    public function __construct(string $type, string $message = null, $payload = null)
-    {
-        if ($type === '') {
-            throw new RuntimeException('Failure type is empty.');
-        }
-
-        if (null === $message) {
-            $message = 'Unknown failure.';
-        }
-
-        parent::__construct($message);
-
-        $this->type = $type;
-        $this->payload = $payload;
     }
 
     private $type;

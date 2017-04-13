@@ -14,16 +14,16 @@ final class Request
      * @param string   $namespace   Namespace is the command namespace.
      * @param string   $command     Command is the application-defined command name for the request.
      * @param mixed    $payload     Payload contains optional application-defined information about the request.
-     * @param bool     $IsMulticast True if the command request was (potentially) sent to more than one peer.
+     * @param bool     $isMulticast True if the command request was (potentially) sent to more than one peer.
      */
     public static function create(
         $source, // TODO: fix this -> Revision $source,
         string $namespace,
         string $command,
         $payload,
-        bool $IsMulticast
+        bool $isMulticast
     ): self {
-        return new self($source, $namespace, $command, $payload, $IsMulticast);
+        return new self($source, $namespace, $command, $payload, $isMulticast);
     }
 
     /**
@@ -65,10 +65,10 @@ final class Request
     }
 
     /**
-     * IsMulticast is true if the command request was (potentially) sent to more
+     * True if the command request was (potentially) sent to more
      * than one peer using Session.ExecuteMany().
      */
-    public function isMulticast()
+    public function isMulticast(): bool
     {
         return $this->isMulticast;
     }
@@ -78,25 +78,25 @@ final class Request
      * @param string   $namespace   Namespace is the command namespace.
      * @param string   $command     Command is the application-defined command name for the request.
      * @param mixed    $payload     Payload contains optional application-defined information about the request.
-     * @param bool     $IsMulticast True if the command request was (potentially) sent to more than one peer.
+     * @param bool     $isMulticast True if the command request was (potentially) sent to more than one peer.
      */
     private function __construct(
         $source, // TODO: fix this -> Revision $source,
         string $namespace,
         string $command,
         $payload,
-        bool $IsMulticast
+        bool $isMulticast
     ) {
         $this->source = $source;
         $this->namespace = $namespace;
         $this->command = $command;
         $this->payload = $payload;
-        $this->IsMulticast = $IsMulticast;
+        $this->isMulticast = $isMulticast;
     }
 
     private $source;
     private $namespace;
     private $command;
     private $payload;
-    private $IsMulticast;
+    private $isMulticast;
 }

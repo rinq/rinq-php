@@ -13,11 +13,24 @@ use RuntimeException;
 final class ErrorException extends RuntimeException
 {
     /**
-     * @param string $type The type of error.
+     * @param string      $type    The type of error.
+     * @param string|null $message Optional human-readable description of the error.
+     *
+     * @throws RuntimeException If the error type is empty.
      */
-    public static function create(string $type, string $message = null)
+    public function __construct(string $type, string $message = null)
     {
-        return new self($type, $message);
+        if ($type === '') {
+            throw new RuntimeException('Error type cannot be empty.');
+        }
+
+        if (null === $message) {
+            $message = 'Unexpected error exception.';
+        }
+
+        parent::__construct($message);
+
+        $this->type = $type;
     }
 
     /**
@@ -28,27 +41,6 @@ final class ErrorException extends RuntimeException
     public function type(): string
     {
         return $this->type;
-    }
-
-    /**
-     * @param string      $type    The type of error.
-     * @param string|null $message Optional human-readable description of the error.
-     *
-     * @throws RuntimeException If the error type is empty.
-     */
-    public function __construct(string $type, string $message = null)
-    {
-        if ($type === '') {
-            throw new RuntimeException('Failure type is empty.');
-        }
-
-        if (null === $message) {
-            $message = 'Unexpected error exception.';
-        }
-
-        parent::__construct($message);
-
-        $this->type = $type;
     }
 
     private $type;

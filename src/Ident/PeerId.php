@@ -4,6 +4,8 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Ident;
 
+use RuntimeException;
+
 /**
  * PeerID uniquely identifies a peer within a network.
  *
