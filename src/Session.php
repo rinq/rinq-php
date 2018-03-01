@@ -4,7 +4,10 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq;
 
+use Foo\AsyncHandler;
+use Foo\NotificationHandler;
 use Rinq\Exception\NotFoundException;
+use Rinq\Ident\MessageId;
 use Rinq\Ident\SessionId;
 
 /**
@@ -75,7 +78,7 @@ interface Session
         Context $context,
         string $namespace,
         string $command,
-        mixed $payload
+        $payload
     );
 
     /**
@@ -113,7 +116,7 @@ interface Session
         Context $context,
         string $namespace,
         string $command,
-        mixed $payload
+        $payload
     ): MessageId;
 
     /**
@@ -146,7 +149,7 @@ interface Session
         Context $context,
         string $namespace,
         string $command,
-        mixed $payload
+        $payload
     ): void;
 
     /**
@@ -172,7 +175,7 @@ interface Session
         Context $context,
         string $namespace,
         string $command,
-        mixed $payload
+        $payload
     ): void;
 
     /**
@@ -193,7 +196,7 @@ interface Session
         Context $context,
         SessionId $target,
         string $type,
-        mixed $payload
+        $payload
     ): void;
 
     /**
@@ -218,7 +221,7 @@ interface Session
         Context $context,
         array $constraint,
         string $type,
-        mixed $payload
+        $payload
     ): void;
 
     /**

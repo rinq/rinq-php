@@ -4,6 +4,8 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Ident;
 
+use RuntimeException;
+
 /**
  * Reference refers to a session at a specific revision.
  */
@@ -33,6 +35,31 @@ class Reference
     public static function create(SessionId $sessionId, int $revision): self
     {
         return new self($sessionId, $revision);
+    }
+
+    public static function createFromString(string $reference)
+    {
+        $parts = explode('@', $reference);
+
+        if (count($parts) !== 2 || !ctype_digit($parts[1])) {
+            throw new RuntimeException(
+                sprintf('Reference %s is invalid.', $reference)
+            );
+        }
+
+        return self::create(
+            SessionId::createFromString($parts[0]),
+            (int) $parts[1]
+        );
+    }
+
+    public function shortString(): string
+    {
+        return sprintf(
+            '%s@%d',
+            $this->sessionId->shortString(),
+            $this->revision
+        );
     }
 
     public function __toString()

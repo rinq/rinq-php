@@ -3,7 +3,8 @@
     "description": "A cross-language command bus and distributed ephemeral data store.",
     "require": {
         "php": "^7",
-        "bunny/bunny": "^0.2"
+        "bunny/bunny": "^0.3",
+        "2tvenom/cborencode": "dev-master"
     },
     "require-dev": {
         "eloquent/phony": "^0.14",

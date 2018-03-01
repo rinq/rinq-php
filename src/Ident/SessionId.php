@@ -4,6 +4,8 @@ declare(strict_types=1); // @codeCoverageIgnore
 
 namespace Rinq\Ident;
 
+use RuntimeException;
+
 /**
  * SessionID uniquely identifies a session within a network.
  *
@@ -40,6 +42,27 @@ class SessionId
     public static function create(PeerId $peerId, int $sequence): self
     {
         return new self($peerId, $sequence);
+    }
+
+    public static function createFromString(string $sessionId)
+    {
+        $parts = explode('.', $sessionId);
+
+        if (count($parts) !== 2 || !ctype_digit($parts[1])) {
+            throw new RuntimeException(
+                sprintf('Session ID %s is invalid.', $sessionId)
+            );
+        }
+
+        return self::create(
+            PeerId::createFromString($parts[0]),
+            (int) $parts[1]
+        );
+    }
+
+    public function shortString()
+    {
+        return sprintf('%s.%d', $this->peerId->shortString(), $this->sequence);
     }
 
     public function __toString()

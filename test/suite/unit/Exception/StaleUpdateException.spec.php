@@ -15,7 +15,7 @@ describe(StaleUpdateException::class, function () {
     });
 
     describe('->construct()', function () {
-        it('should construct a meaningful exception message', function () {
+        it('constructs a meaningful exception message', function () {
             expect($this->subject->getMessage())->to->equal(
                 'Can not update or close 6F-00DE.333@444, the session has ' .
                     'been modified since that revision.'
@@ -24,7 +24,7 @@ describe(StaleUpdateException::class, function () {
     });
 
     describe('->reference()', function () {
-        it('should return the original reference', function () {
+        it('returns the original reference', function () {
             expect($this->subject->reference())->to->equal($this->reference);
         });
     });

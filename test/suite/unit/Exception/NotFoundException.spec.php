@@ -14,13 +14,13 @@ describe(NotFoundException::class, function () {
     });
 
     describe('->construct()', function () {
-        it('should construct a meaningful exception message', function () {
+        it('constructs a meaningful exception message', function () {
             expect($this->subject->getMessage())->to->equal('Session 6F-00DE.333 not found.');
         });
     });
 
     describe('->id()', function () {
-        it('should return the original session id', function () {
+        it('returns the original session id', function () {
             expect($this->subject->id())->to->equal($this->sessionId);
         });
     });

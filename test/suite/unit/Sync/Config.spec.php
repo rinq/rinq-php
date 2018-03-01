@@ -9,7 +9,7 @@ use function Eloquent\Phony\mock;
 
 describe(Config::class, function () {
     describe('->construct()', function () {
-        it('should construct new config with sensible defaults', function () {
+        it('constructs a new config with sensible defaults', function () {
             $logger = mock(LoggerInterface::class)->get();
             $subject = Config::create($logger);
 
@@ -18,7 +18,7 @@ describe(Config::class, function () {
             expect($subject->pruneInterval())->to->equal(180.0);
         });
 
-        it('should construct new config with specified values', function () {
+        it('construct a new config with specified values', function () {
             $logger = mock(LoggerInterface::class)->get();
             $subject = Config::create(
                 $logger,

@@ -68,7 +68,7 @@ interface Peer
      * Handle command requests and notifications until {@see Peer::stop()} is
      * called.
      */
-    public function wait(): void;
+    public function run(float $timeout): void;
 
     /**
      * Stop instructs the peer to disconnect from the network in a graceful
